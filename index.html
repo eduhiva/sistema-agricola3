@@ -10,7 +10,7 @@ export default function Agricultores() {
   const [busqueda, setBusqueda] = useState("");
   const [resultado, setResultado] = useState(agricultores);
 
-  // 🔎 FUNCIÓN BUSCAR (LO QUE FALTABA CORREGIR)
+  // 🔎 BUSCAR
   const buscarAgricultor = () => {
     if (busqueda.trim() === "") {
       setResultado(agricultores);
@@ -24,7 +24,7 @@ export default function Agricultores() {
     setResultado(filtrados);
   };
 
-  // ➕ CREAR NUEVO AGRICULTOR
+  // ➕ CREAR
   const crearAgricultor = () => {
     const nombre = prompt("Ingrese nombre del agricultor");
     if (!nombre) return;
