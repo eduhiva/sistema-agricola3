@@ -1,0 +1,80 @@
+import { useState } from "react";
+
+export default function Agricultores() {
+  const [agricultores, setAgricultores] = useState([
+    { id: 1, nombre: "Juan Pérez" },
+    { id: 2, nombre: "María González" },
+    { id: 3, nombre: "Pedro Soto" }
+  ]);
+
+  const [busqueda, setBusqueda] = useState("");
+  const [resultado, setResultado] = useState(agricultores);
+
+  // 🔎 FUNCIÓN BUSCAR (LO QUE FALTABA CORREGIR)
+  const buscarAgricultor = () => {
+    if (busqueda.trim() === "") {
+      setResultado(agricultores);
+      return;
+    }
+
+    const filtrados = agricultores.filter((agri) =>
+      agri.nombre.toLowerCase().includes(busqueda.toLowerCase())
+    );
+
+    setResultado(filtrados);
+  };
+
+  // ➕ CREAR NUEVO AGRICULTOR
+  const crearAgricultor = () => {
+    const nombre = prompt("Ingrese nombre del agricultor");
+    if (!nombre) return;
+
+    const nuevo = {
+      id: agricultores.length + 1,
+      nombre
+    };
+
+    const nuevaLista = [...agricultores, nuevo];
+    setAgricultores(nuevaLista);
+    setResultado(nuevaLista);
+  };
+
+  return (
+    <div style={{ padding: "20px" }}>
+      <h1>Panel Administrador</h1>
+
+      {/* BUSCADOR */}
+      <div style={{ marginBottom: "20px" }}>
+        <input
+          type="text"
+          placeholder="Buscar agricultor..."
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          style={{ padding: "8px", marginRight: "10px" }}
+        />
+        <button onClick={buscarAgricultor}>Buscar</button>
+        <button onClick={crearAgricultor} style={{ marginLeft: "10px" }}>
+          Crear Agricultor
+        </button>
+      </div>
+
+      {/* LISTADO */}
+      <table border="1" cellPadding="10">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+          </tr>
+        </thead>
+        <tbody>
+          {resultado.map((agri) => (
+            <tr key={agri.id}>
+              <td>{agri.id}</td>
+              <td>{agri.nombre}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
