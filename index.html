@@ -1201,6 +1201,7 @@ const estudioOptions = [
 ];
 const tenenciaOptions = ["Propio", "Arriendo", "Comodato", "Usufructo", "Ocupante"];
 const rubroOptions = ["Leche", "Carne", "Agricultura", "Otros"];
+const DATA_VERSION = "base-real-2025-v1";
 
 function normalizeText(text) {
   return (text || "")
@@ -1338,6 +1339,13 @@ export default function SistemaAgricolaWeb() {
   const [query, setQuery] = useState("");
   const [farmers, setFarmers] = useState(() => {
     if (typeof window === "undefined") return initialFarmers;
+    const savedVersion = window.localStorage.getItem("sistema-agricola-data-version");
+    if (savedVersion !== DATA_VERSION) {
+      window.localStorage.removeItem("sistema-agricola-farmers");
+      window.localStorage.removeItem("sistema-agricola-selected-farmer-id");
+      window.localStorage.setItem("sistema-agricola-data-version", DATA_VERSION);
+      return initialFarmers;
+    }
     const saved = window.localStorage.getItem("sistema-agricola-farmers");
     if (!saved) return initialFarmers;
     try {
@@ -1349,6 +1357,8 @@ export default function SistemaAgricolaWeb() {
   });
   const [selectedFarmerId, setSelectedFarmerId] = useState(() => {
     if (typeof window === "undefined") return initialFarmers[0].id;
+    const savedVersion = window.localStorage.getItem("sistema-agricola-data-version");
+    if (savedVersion !== DATA_VERSION) return initialFarmers[0].id;
     const saved = window.localStorage.getItem("sistema-agricola-selected-farmer-id");
     return saved ? Number(saved) : initialFarmers[0].id;
   });
@@ -1388,6 +1398,7 @@ export default function SistemaAgricolaWeb() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    window.localStorage.setItem("sistema-agricola-data-version", DATA_VERSION);
     window.localStorage.setItem("sistema-agricola-farmers", JSON.stringify(farmers));
   }, [farmers]);
 
@@ -1520,6 +1531,7 @@ export default function SistemaAgricolaWeb() {
     if (!window.confirm("¿Restablecer la demo y borrar los cambios guardados en este navegador?")) return;
     window.localStorage.removeItem("sistema-agricola-farmers");
     window.localStorage.removeItem("sistema-agricola-selected-farmer-id");
+    window.localStorage.setItem("sistema-agricola-data-version", DATA_VERSION);
     setFarmers(initialFarmers);
     setSelectedFarmerId(initialFarmers[0].id);
     setEditingFarmer(false);
