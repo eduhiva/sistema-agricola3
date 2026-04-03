@@ -1,972 +1,1882 @@
-import React, { useMemo, useState } from "react";
-import { motion } from "framer-motion";
-import { Search, Plus, ArrowLeft, User, MapPin, FileText, LogOut, Save, Tractor, FolderOpen, PencilLine, BriefcaseBusiness } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { Search, Tractor, Plus, LogOut, Home, Pencil, Save, X, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 const initialFarmers = [
   {
-    id: 1,
-    nombres: "Juan Carlos",
-    apellidos: "Pérez Soto",
-    rut: "12.345.678-9",
-    telefono: "+56 9 8765 4321",
-    comuna: "Puerto Varas",
-    direccion: "Línea Nueva",
-    rubro: "Leche",
-    rubrosExplotacion: ["Leche", "Agricultura", "Carne"],
-    predios: 2,
-    observaciones: "Productor lechero con información histórica.",
-    prediosDetalle: [
-      {
-        id: 101,
-        nombre: "Predio Santa Rosa",
-        rol: "123-45",
-        comuna: "Puerto Varas",
-        sector: "Línea Nueva",
-        hectareasTotales: 48,
-        hectareasArables: 40,
-        asignacionesRubro: [
-          { rubro: "Leche", hectareas: 30 },
-          { rubro: "Agricultura", hectareas: 6 },
-        ],
-        tenencia: "Propio",
-        avaluoFiscal: "Sí",
-        documentoTenencia: "Escritura_Santa_Rosa.pdf",
-        documentoAvaluo: "Avaluo_2026_Santa_Rosa.pdf",
-      },
-      {
-        id: 102,
-        nombre: "Predio El Arrayán",
-        rol: "123-67",
-        comuna: "Puerto Varas",
-        sector: "Colonia Tres Puentes",
-        hectareasTotales: 22,
-        hectareasArables: 18,
-        asignacionesRubro: [
-          { rubro: "Leche", hectareas: 12 },
-          { rubro: "Carne", hectareas: 4 },
-        ],
-        tenencia: "Arriendo",
-        avaluoFiscal: "Sí",
-        documentoTenencia: "Contrato_Arriendo_Arrayan.pdf",
-        documentoAvaluo: "Avaluo_2026_Arrayan.pdf",
-      },
-    ],
+    "id": 1,
+    "rut": "15284198-1",
+    "nombres": "WALDEMAR ARTURO",
+    "apellidos": "AGUILAR LEGUE",
+    "telefono": "978586150",
+    "correo": "",
+    "localidad": "LOLCURA",
+    "comuna": "MAULLIN",
+    "direccion": "LOLCURA",
+    "fechaNacimiento": "1982-05-21",
+    "estadoCivil": "Soltero",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Tecnico Profesional",
+    "profesion": "",
+    "fechaInicioActividades": "2012-12-11",
+    "plantaEntrega": "NESTLE",
+    "rup": "10-1-08-2446",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
   },
   {
-    id: 2,
-    nombres: "María Elena",
-    apellidos: "Muñoz Cárdenas",
-    rut: "10.123.456-7",
-    telefono: "+56 9 7654 3210",
-    comuna: "Frutillar",
-    direccion: "Sector Los Bajos",
-    rubro: "Carne",
-    rubrosExplotacion: ["Carne", "Agricultura"],
-    predios: 1,
-    observaciones: "Interés en incorporar módulo económico.",
-    prediosDetalle: [
-      {
-        id: 201,
-        nombre: "Fundo Los Bajos",
-        rol: "456-11",
-        comuna: "Frutillar",
-        sector: "Los Bajos",
-        hectareasTotales: 64,
-        hectareasArables: 46,
-        asignacionesRubro: [
-          { rubro: "Carne", hectareas: 38 },
-          { rubro: "Agricultura", hectareas: 6 },
-        ],
-        tenencia: "Propio",
-        avaluoFiscal: "No",
-        documentoTenencia: "Tenencia_Los_Bajos.pdf",
-        documentoAvaluo: "Sin archivo",
-      },
-    ],
+    "id": 2,
+    "rut": "11309721-3",
+    "nombres": "JORGE ALEJANDRO",
+    "apellidos": "ALARCON DUMENEZ",
+    "telefono": "994677503",
+    "correo": "",
+    "localidad": "OSTIONES",
+    "comuna": "LOS MUERMOS",
+    "direccion": "OSTIONES",
+    "fechaNacimiento": "1968-08-27",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Básica Completa",
+    "profesion": "",
+    "fechaInicioActividades": "2014-09-25",
+    "plantaEntrega": "QUESERA",
+    "rup": "10-1-06-1843",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
   },
   {
-    id: 3,
-    nombres: "Pedro Antonio",
-    apellidos: "Hidalgo Vargas",
-    rut: "9.876.543-2",
-    telefono: "+56 9 6543 2109",
-    comuna: "Llanquihue",
-    direccion: "Ruta V-155",
-    rubro: "Leche",
-    rubrosExplotacion: ["Leche", "Carne", "Agricultura"],
-    predios: 3,
-    observaciones: "Cliente con varios predios asociados al mismo rubro.",
-    prediosDetalle: [
-      {
-        id: 301,
-        nombre: "Predio El Mirador",
-        rol: "890-10",
-        comuna: "Llanquihue",
-        sector: "Totoral",
-        hectareasTotales: 30,
-        hectareasArables: 24,
-        asignacionesRubro: [
-          { rubro: "Leche", hectareas: 18 },
-          { rubro: "Carne", hectareas: 3 },
-        ],
-        tenencia: "Propio",
-        avaluoFiscal: "Sí",
-        documentoTenencia: "Tenencia_El_Mirador.pdf",
-        documentoAvaluo: "Avaluo_El_Mirador.pdf",
-      },
-      {
-        id: 302,
-        nombre: "Predio Los Robles",
-        rol: "890-11",
-        comuna: "Llanquihue",
-        sector: "Pichilaguna",
-        hectareasTotales: 18,
-        hectareasArables: 13,
-        asignacionesRubro: [
-          { rubro: "Leche", hectareas: 10 },
-          { rubro: "Agricultura", hectareas: 2 },
-        ],
-        tenencia: "Mediería",
-        avaluoFiscal: "Sí",
-        documentoTenencia: "Convenio_Los_Robles.pdf",
-        documentoAvaluo: "Avaluo_Los_Robles.pdf",
-      },
-      {
-        id: 303,
-        nombre: "Predio Vista Sur",
-        rol: "890-12",
-        comuna: "Llanquihue",
-        sector: "Ruta V-155",
-        hectareasTotales: 12,
-        hectareasArables: 8,
-        asignacionesRubro: [
-          { rubro: "Leche", hectareas: 5 },
-          { rubro: "Carne", hectareas: 2 },
-        ],
-        tenencia: "Arriendo",
-        avaluoFiscal: "No",
-        documentoTenencia: "Contrato_Vista_Sur.pdf",
-        documentoAvaluo: "Sin archivo",
-      },
-    ],
+    "id": 3,
+    "rut": "14225283-K",
+    "nombres": "RODRIGO ANTONIO",
+    "apellidos": "ALVAREZ NEUMANN",
+    "telefono": "959757664",
+    "correo": "",
+    "localidad": "PARAGUAY CHICO",
+    "comuna": "LOS MUERMOS",
+    "direccion": "PARAGUAY CHICO",
+    "fechaNacimiento": "1981-11-01",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Tecnico Profesional",
+    "profesion": "",
+    "fechaInicioActividades": "2014-01-09",
+    "plantaEntrega": "NESTLE",
+    "rup": "10-1-06-1236",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
   },
+  {
+    "id": 4,
+    "rut": "10481649-5",
+    "nombres": "JOSE ENRIQUE",
+    "apellidos": "AMPUERO PAREDES",
+    "telefono": "962455468",
+    "correo": "",
+    "localidad": "POTRERO DEL NORTE",
+    "comuna": "LOS MUERMOS",
+    "direccion": "POTRERO DEL NORTE",
+    "fechaNacimiento": "1970-07-11",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Media Completa",
+    "profesion": "",
+    "fechaInicioActividades": "2012-06-19",
+    "plantaEntrega": "COLUN",
+    "rup": "10-1-06-1271",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 5,
+    "rut": "11117066-5",
+    "nombres": "ROBERTO ALEJANDRO",
+    "apellidos": "AÑAZCO GONZALEZ",
+    "telefono": "999408829",
+    "correo": "",
+    "localidad": "EL COIPO",
+    "comuna": "LOS MUERMOS",
+    "direccion": "EL COIPO",
+    "fechaNacimiento": "1978-06-19",
+    "estadoCivil": "Soltero",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Básica Completa",
+    "profesion": "",
+    "fechaInicioActividades": "2014-09-09",
+    "plantaEntrega": "QUESERA",
+    "rup": "10-1-06-1185",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 6,
+    "rut": "10762010-9",
+    "nombres": "JOSE GREGORIO",
+    "apellidos": "APABLAZA MILLACHEO",
+    "telefono": "988041587",
+    "correo": "",
+    "localidad": "SAN CARLOS",
+    "comuna": "LOS MUERMOS",
+    "direccion": "SAN CARLOS",
+    "fechaNacimiento": "1972-03-12",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Básica Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2012-02-23",
+    "plantaEntrega": "QUESERA",
+    "rup": "10-1-06-2384",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 7,
+    "rut": "16269373-5",
+    "nombres": "JULIO ALEJANDRO",
+    "apellidos": "ASENCIO PEREZ",
+    "telefono": "994962209",
+    "correo": "",
+    "localidad": "PALIHUE",
+    "comuna": "LOS MUERMOS",
+    "direccion": "PALIHUE",
+    "fechaNacimiento": "1989-09-03",
+    "estadoCivil": "Soltero",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Tecnico Profesional",
+    "profesion": "",
+    "fechaInicioActividades": "2015-06-16",
+    "plantaEntrega": "QUESERA",
+    "rup": "10-1-06-1806",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 8,
+    "rut": "10019969-6",
+    "nombres": "WILLY FRANCISCO",
+    "apellidos": "BARRIA AGUILA",
+    "telefono": "995724557",
+    "correo": "",
+    "localidad": "SAN CARLOS",
+    "comuna": "LOS MUERMOS",
+    "direccion": "SAN CARLOS",
+    "fechaNacimiento": "1969-06-07",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Media Completa",
+    "profesion": "",
+    "fechaInicioActividades": "2010-11-15",
+    "plantaEntrega": "QUESERA",
+    "rup": "10-1-06-1622",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 9,
+    "rut": "5532084-5",
+    "nombres": "LUCINDA DEL CARMEN",
+    "apellidos": "BARRIA GOMEZ",
+    "telefono": "953497619",
+    "correo": "",
+    "localidad": "RIO-FRIO",
+    "comuna": "LOS MUERMOS",
+    "direccion": "RIO-FRIO",
+    "fechaNacimiento": "1948-12-18",
+    "estadoCivil": "Viudo",
+    "genero": "Femenino",
+    "etnia": "No",
+    "estudios": "Básica Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2010-11-15",
+    "plantaEntrega": "COLUN",
+    "rup": "10-1-06-2040",
+    "grupoAsesoria": "SAT LECHE-CARNE 2",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 10,
+    "rut": "16507718-0",
+    "nombres": "RAFAEL ANTONIO",
+    "apellidos": "BUSTAMANTE GOMEZ",
+    "telefono": "980835538",
+    "correo": "",
+    "localidad": "PALO HUECO",
+    "comuna": "MAULLIN",
+    "direccion": "PALO HUECO",
+    "fechaNacimiento": "1976-07-02",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Media Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2012-12-17",
+    "plantaEntrega": "COLUN",
+    "rup": "10-1-08-2373",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 11,
+    "rut": "8133548-6",
+    "nombres": "MARIO ANTONIO",
+    "apellidos": "BUSTAMANTE OYARZUN",
+    "telefono": "967285359",
+    "correo": "",
+    "localidad": "MISQUIHUE",
+    "comuna": "LOS MUERMOS",
+    "direccion": "MISQUIHUE",
+    "fechaNacimiento": "1959-07-15",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Básica Completa",
+    "profesion": "",
+    "fechaInicioActividades": "2012-09-13",
+    "plantaEntrega": "QUESERA",
+    "rup": "10-1-06-2584",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 12,
+    "rut": "10164611-4",
+    "nombres": "JOSE NICANOR",
+    "apellidos": "CARRILLO GONZALEZ",
+    "telefono": "940162756",
+    "correo": "",
+    "localidad": "PALO HUECO",
+    "comuna": "MAULLIN",
+    "direccion": "PALO HUECO",
+    "fechaNacimiento": "1970-06-30",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Básica Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2012-11-22",
+    "plantaEntrega": "COLUN",
+    "rup": "10-1-08-2231",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 13,
+    "rut": "15494527-K",
+    "nombres": "JOSE RICARDO",
+    "apellidos": "CATRILEF CARIQUEO",
+    "telefono": "956267084",
+    "correo": "",
+    "localidad": "PASO EL LEON",
+    "comuna": "LOS MUERMOS",
+    "direccion": "PASO EL LEON",
+    "fechaNacimiento": "1984-01-12",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "Si",
+    "estudios": "Media Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2014-09-03",
+    "plantaEntrega": "QUESERA",
+    "rup": "10-1-06-1764",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 14,
+    "rut": "7336300-4",
+    "nombres": "ALBERTO HERNAN",
+    "apellidos": "CATRILEF GOMEZ",
+    "telefono": "978261414",
+    "correo": "",
+    "localidad": "CUMBRE ALTA",
+    "comuna": "LOS MUERMOS",
+    "direccion": "CUMBRE ALTA",
+    "fechaNacimiento": "1957-08-28",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "Si",
+    "estudios": "Media Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2016-06-07",
+    "plantaEntrega": "QUESERA",
+    "rup": "10-1-06-1898",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 15,
+    "rut": "9248901-9",
+    "nombres": "LUIS ARMANDO",
+    "apellidos": "ESPINOZA ROA",
+    "telefono": "954890070",
+    "correo": "",
+    "localidad": "BAHIA MAIMON",
+    "comuna": "MAULLIN",
+    "direccion": "BAHIA MAIMON",
+    "fechaNacimiento": "1964-07-14",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Básica Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2013-01-08",
+    "plantaEntrega": "COLUN",
+    "rup": "10-1-08-2190",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 16,
+    "rut": "5709409-5",
+    "nombres": "JUAN SEGUNDO",
+    "apellidos": "GALLARDO OYARZO",
+    "telefono": "998554456",
+    "correo": "",
+    "localidad": "BISMARCK",
+    "comuna": "LOS MUERMOS",
+    "direccion": "BISMARCK",
+    "fechaNacimiento": "1952-02-16",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Básica Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2010-11-02",
+    "plantaEntrega": "QUESERA",
+    "rup": "10-1-06-2221",
+    "grupoAsesoria": "SAT LECHE-CARNE 2",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 17,
+    "rut": "7343523-4",
+    "nombres": "ERASMO HEBER",
+    "apellidos": "GUENTEI ANTIPAN",
+    "telefono": "970337196",
+    "correo": "",
+    "localidad": "PALIHUE",
+    "comuna": "LOS MUERMOS",
+    "direccion": "PALIHUE",
+    "fechaNacimiento": "1957-02-21",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "Si",
+    "estudios": "Básica Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2012-09-20",
+    "plantaEntrega": "NESTLE",
+    "rup": "10-1-06-1879",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 18,
+    "rut": "9021500-0",
+    "nombres": "JOSE ALONSO",
+    "apellidos": "HAUEN JARAMILLO",
+    "telefono": "987889357",
+    "correo": "",
+    "localidad": "SAN CARLOS",
+    "comuna": "LOS MUERMOS",
+    "direccion": "SAN CARLOS",
+    "fechaNacimiento": "1964-11-10",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Básica Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2012-05-29",
+    "plantaEntrega": "QUESERA",
+    "rup": "10-1-06-1134",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 19,
+    "rut": "8946409-9",
+    "nombres": "SERGIO ANTONIO",
+    "apellidos": "MANCILLA MALDONADO",
+    "telefono": "988737103",
+    "correo": "",
+    "localidad": "MISQUIHUE",
+    "comuna": "LOS MUERMOS",
+    "direccion": "MISQUIHUE",
+    "fechaNacimiento": "1964-03-31",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Básica Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2010-11-16",
+    "plantaEntrega": "QUESERA",
+    "rup": "10-1-06-1760",
+    "grupoAsesoria": "SAT LECHE-CARNE 2",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 20,
+    "rut": "10551897-8",
+    "nombres": "MAURICIO NICOMEDES",
+    "apellidos": "MANSILLA RUIZ",
+    "telefono": "949716840",
+    "correo": "",
+    "localidad": "PASAJE EL LEON",
+    "comuna": "LOS MUERMOS",
+    "direccion": "PASAJE EL LEON",
+    "fechaNacimiento": "1969-12-10",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "Si",
+    "estudios": "Media Completa",
+    "profesion": "",
+    "fechaInicioActividades": "2013-09-11",
+    "plantaEntrega": "QUESERA",
+    "rup": "10-1-06-2210",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 21,
+    "rut": "8749840-9",
+    "nombres": "JORGE ANTONIO",
+    "apellidos": "MARTINEZ MIRANDA",
+    "telefono": "971428006",
+    "correo": "",
+    "localidad": "MISQUIHUE",
+    "comuna": "LOS MUERMOS",
+    "direccion": "MISQUIHUE",
+    "fechaNacimiento": "1962-01-03",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Básica Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2012-12-13",
+    "plantaEntrega": "QUESERA",
+    "rup": "10-1-06-2121",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 22,
+    "rut": "16895023-3",
+    "nombres": "LUIS LEONARDO",
+    "apellidos": "MAYORGA AGUILAR",
+    "telefono": "992141046",
+    "correo": "",
+    "localidad": "BAJO AMANCAY",
+    "comuna": "LOS MUERMOS",
+    "direccion": "BAJO AMANCAY",
+    "fechaNacimiento": "1987-10-18",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Media Completa",
+    "profesion": "",
+    "fechaInicioActividades": "2012-11-22",
+    "plantaEntrega": "QUESERA",
+    "rup": "10-1-06-1785",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 23,
+    "rut": "19673860-6",
+    "nombres": "JOSE MANUEL",
+    "apellidos": "MILLAGUIR MANCILLA",
+    "telefono": "954219815",
+    "correo": "",
+    "localidad": "QUILLAHUA",
+    "comuna": "MAULLIN",
+    "direccion": "QUILLAHUA",
+    "fechaNacimiento": "2001-11-12",
+    "estadoCivil": "Soltero",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Media Completa",
+    "profesion": "",
+    "fechaInicioActividades": "2023-09-25",
+    "plantaEntrega": "COLUN",
+    "rup": "10-1-08-2206",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 24,
+    "rut": "11712828-8",
+    "nombres": "JUAN RAMON",
+    "apellidos": "MIRANDA OYARZO",
+    "telefono": "978663188",
+    "correo": "",
+    "localidad": "QUILLAHUA",
+    "comuna": "MAULLIN",
+    "direccion": "QUILLAHUA",
+    "fechaNacimiento": "1973-10-01",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Básica Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2012-12-04",
+    "plantaEntrega": "COLUN",
+    "rup": "10-1-08-2118",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 25,
+    "rut": "13737442-0",
+    "nombres": "ROSA DEL CARMEN",
+    "apellidos": "MORALES OJEDA",
+    "telefono": "970175339",
+    "correo": "",
+    "localidad": "EL PULMO",
+    "comuna": "LOS MUERMOS",
+    "direccion": "EL PULMO",
+    "fechaNacimiento": "1981-11-24",
+    "estadoCivil": "Casado",
+    "genero": "Femenino",
+    "etnia": "No",
+    "estudios": "Básica Completa",
+    "profesion": "",
+    "fechaInicioActividades": "2013-09-11",
+    "plantaEntrega": "QUESERA",
+    "rup": "10-1-06-1068",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 26,
+    "rut": "4839911-8",
+    "nombres": "GUILLERMINA FELISA",
+    "apellidos": "OJEDA GONZALEZ",
+    "telefono": "946511542",
+    "correo": "",
+    "localidad": "EL PULMO",
+    "comuna": "LOS MUERMOS",
+    "direccion": "EL PULMO",
+    "fechaNacimiento": "1944-02-10",
+    "estadoCivil": "Viudo",
+    "genero": "Femenino",
+    "etnia": "No",
+    "estudios": "Básica Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2013-09-11",
+    "plantaEntrega": "QUESERA",
+    "rup": "10-1-06-1602",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 27,
+    "rut": "13737442-0",
+    "nombres": "JUAN ALEJANDRO",
+    "apellidos": "OJEDA OJEDA",
+    "telefono": "995904697",
+    "correo": "",
+    "localidad": "EL PULMO",
+    "comuna": "LOS MUERMOS",
+    "direccion": "EL PULMO",
+    "fechaNacimiento": "1980-09-03",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Básica Completa",
+    "profesion": "",
+    "fechaInicioActividades": "2010-10-06",
+    "plantaEntrega": "QUESERA",
+    "rup": "10-1-06-1792",
+    "grupoAsesoria": "SAT LECHE-CARNE 2",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 28,
+    "rut": "7877901-2",
+    "nombres": "ALEJANDRO FRANCISCO",
+    "apellidos": "OYARZO JARA",
+    "telefono": "968537911",
+    "correo": "",
+    "localidad": "MISQUIHUE",
+    "comuna": "LOS MUERMOS",
+    "direccion": "MISQUIHUE",
+    "fechaNacimiento": "1958-01-13",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Básica Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2013-01-08",
+    "plantaEntrega": "QUESERA",
+    "rup": "10-1-06-1029",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 29,
+    "rut": "9594529-5",
+    "nombres": "DOMINGO ANTONIO",
+    "apellidos": "OYARZO OYARZO",
+    "telefono": "998393259",
+    "correo": "",
+    "localidad": "RIO-FRIO",
+    "comuna": "LOS MUERMOS",
+    "direccion": "RIO-FRIO",
+    "fechaNacimiento": "1966-07-31",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Básica Completa",
+    "profesion": "",
+    "fechaInicioActividades": "2010-12-15",
+    "plantaEntrega": "NESTLE",
+    "rup": "10-1-06-1526",
+    "grupoAsesoria": "SAT LECHE-CARNE 2",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 30,
+    "rut": "11117066-5",
+    "nombres": "NELSON JAVIER",
+    "apellidos": "OYARZO TRONCOSO",
+    "telefono": "971257138",
+    "correo": "",
+    "localidad": "QUILLAHUA",
+    "comuna": "MAULLIN",
+    "direccion": "QUILLAHUA",
+    "fechaNacimiento": "1966-09-19",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Básica Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2012-11-22",
+    "plantaEntrega": "COLUN",
+    "rup": "10-1-08-2487",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 31,
+    "rut": "12309165-5",
+    "nombres": "EDGARDO DEL CARMEN",
+    "apellidos": "OYARZO TRONCOSO",
+    "telefono": "952797713",
+    "correo": "",
+    "localidad": "QUILLAHUA",
+    "comuna": "MAULLIN",
+    "direccion": "QUILLAHUA",
+    "fechaNacimiento": "1975-10-08",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Media Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2012-12-12",
+    "plantaEntrega": "COLUN",
+    "rup": "10-1-08-2311",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 32,
+    "rut": "11604802-7",
+    "nombres": "MARCELO ANTONIO",
+    "apellidos": "OYARZO TRONCOSO",
+    "telefono": "981665708",
+    "correo": "",
+    "localidad": "QUILLAHUA",
+    "comuna": "MAULLIN",
+    "direccion": "QUILLAHUA",
+    "fechaNacimiento": "1971-09-24",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Básica Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2012-12-04",
+    "plantaEntrega": "COLUN",
+    "rup": "10-1-08-2130",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 33,
+    "rut": "9735112-0",
+    "nombres": "FABIOLA ERLANA",
+    "apellidos": "PAREDES SEPULVEDA",
+    "telefono": "996243893",
+    "correo": "",
+    "localidad": "QUILLAHUA",
+    "comuna": "MAULLIN",
+    "direccion": "QUILLAHUA",
+    "fechaNacimiento": "1968-12-11",
+    "estadoCivil": "Casado",
+    "genero": "Femenino",
+    "etnia": "No",
+    "estudios": "Básica Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2012-11-22",
+    "plantaEntrega": "COLUN",
+    "rup": "10-1-08-2305",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 34,
+    "rut": "9248901-9",
+    "nombres": "PERCY LAUTARO",
+    "apellidos": "PAILALAF NAVARRO",
+    "telefono": "993650837",
+    "correo": "",
+    "localidad": "EL MAITEN",
+    "comuna": "LOS MUERMOS",
+    "direccion": "EL MAITEN",
+    "fechaNacimiento": "1968-08-30",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "Si",
+    "estudios": "Básica Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2012-11-29",
+    "plantaEntrega": "QUESERA",
+    "rup": "10-1-06-1931",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 35,
+    "rut": "11715307-K",
+    "nombres": "AIDA ANGELICA",
+    "apellidos": "PAREDES PAREDES",
+    "telefono": "975316329",
+    "correo": "",
+    "localidad": "QUILLAHUA",
+    "comuna": "MAULLIN",
+    "direccion": "QUILLAHUA",
+    "fechaNacimiento": "1971-04-22",
+    "estadoCivil": "Casado",
+    "genero": "Femenino",
+    "etnia": "No",
+    "estudios": "Media Completa",
+    "profesion": "",
+    "fechaInicioActividades": "2012-12-04",
+    "plantaEntrega": "COLUN",
+    "rup": "10-1-08-2347",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 36,
+    "rut": "8793925-1",
+    "nombres": "NELSON AGUSTIN",
+    "apellidos": "PEREZ HERRERA",
+    "telefono": "985791845",
+    "correo": "",
+    "localidad": "PICHICHE",
+    "comuna": "LOS MUERMOS",
+    "direccion": "PICHICHE",
+    "fechaNacimiento": "1962-10-06",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Básica Completa",
+    "profesion": "",
+    "fechaInicioActividades": "2010-12-15",
+    "plantaEntrega": "NESTLE",
+    "rup": "10-1-06-1047",
+    "grupoAsesoria": "SAT LECHE-CARNE 2",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 37,
+    "rut": "4315311-0",
+    "nombres": "LUISA DEL CARMEN",
+    "apellidos": "PEREZ HERRERA",
+    "telefono": "982961173",
+    "correo": "",
+    "localidad": "PICHICHE",
+    "comuna": "LOS MUERMOS",
+    "direccion": "PICHICHE",
+    "fechaNacimiento": "1943-11-30",
+    "estadoCivil": "Viudo",
+    "genero": "Femenino",
+    "etnia": "No",
+    "estudios": "Básica Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2013-08-13",
+    "plantaEntrega": "NESTLE",
+    "rup": "10-1-06-1562",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 38,
+    "rut": "9172838-9",
+    "nombres": "JUAN CARLOS",
+    "apellidos": "PEREZ RUIZ",
+    "telefono": "974261167",
+    "correo": "",
+    "localidad": "MISQUIHUE",
+    "comuna": "LOS MUERMOS",
+    "direccion": "MISQUIHUE",
+    "fechaNacimiento": "1963-07-23",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Básica Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2012-11-22",
+    "plantaEntrega": "QUESERA",
+    "rup": "10-1-06-1011",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 39,
+    "rut": "13167442-2",
+    "nombres": "JUAN VALERIANO",
+    "apellidos": "PRADO OYARZO",
+    "telefono": "978911412",
+    "correo": "",
+    "localidad": "MISQUIHUE",
+    "comuna": "LOS MUERMOS",
+    "direccion": "MISQUIHUE",
+    "fechaNacimiento": "1979-03-16",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Media Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2010-11-16",
+    "plantaEntrega": "NESTLE",
+    "rup": "10-1-06-2576",
+    "grupoAsesoria": "SAT LECHE-CARNE 2",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 40,
+    "rut": "11691530-8",
+    "nombres": "JULIO CESAR",
+    "apellidos": "ROA PAILALAF",
+    "telefono": "976177963",
+    "correo": "",
+    "localidad": "MISQUIHUE",
+    "comuna": "LOS MUERMOS",
+    "direccion": "MISQUIHUE",
+    "fechaNacimiento": "1972-12-31",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "Si",
+    "estudios": "Básica Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2012-11-22",
+    "plantaEntrega": "QUESERA",
+    "rup": "10-1-06-2020",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 41,
+    "rut": "13967812-5",
+    "nombres": "PEDRO PABLO",
+    "apellidos": "SOTO MIRANDA",
+    "telefono": "997085919",
+    "correo": "",
+    "localidad": "QUILLAHUA",
+    "comuna": "MAULLIN",
+    "direccion": "QUILLAHUA",
+    "fechaNacimiento": "1978-03-11",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Media Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2012-11-22",
+    "plantaEntrega": "COLUN",
+    "rup": "10-1-08-2203",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 42,
+    "rut": "14465942-2",
+    "nombres": "LUIS VICTORIANO",
+    "apellidos": "TOLEDO TRONCOSO",
+    "telefono": "997299555",
+    "correo": "",
+    "localidad": "QUILLAHUA",
+    "comuna": "MAULLIN",
+    "direccion": "QUILLAHUA",
+    "fechaNacimiento": "1984-08-22",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Media Completa",
+    "profesion": "",
+    "fechaInicioActividades": "2012-11-22",
+    "plantaEntrega": "COLUN",
+    "rup": "10-1-08-2120",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 43,
+    "rut": "11251848-7",
+    "nombres": "DOMINGA DE LAS M.",
+    "apellidos": "TRONCOSO AGUILA",
+    "telefono": "980900980",
+    "correo": "",
+    "localidad": "MISQUIHUE",
+    "comuna": "LOS MUERMOS",
+    "direccion": "MISQUIHUE",
+    "fechaNacimiento": "1975-07-20",
+    "estadoCivil": "Casado",
+    "genero": "Femenino",
+    "etnia": "No",
+    "estudios": "Media Completa",
+    "profesion": "",
+    "fechaInicioActividades": "2010-11-16",
+    "plantaEntrega": "QUESERA",
+    "rup": "10-1-06-2307",
+    "grupoAsesoria": "SAT LECHE-CARNE 2",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 44,
+    "rut": "10762010-9",
+    "nombres": "MARIA DEL CARMEN",
+    "apellidos": "URIBE PRADO",
+    "telefono": "998378851",
+    "correo": "",
+    "localidad": "MISQUIHUE",
+    "comuna": "LOS MUERMOS",
+    "direccion": "MISQUIHUE",
+    "fechaNacimiento": "1970-04-14",
+    "estadoCivil": "Casado",
+    "genero": "Femenino",
+    "etnia": "No",
+    "estudios": "Básica Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2010-11-16",
+    "plantaEntrega": "QUESERA",
+    "rup": "10-1-06-2154",
+    "grupoAsesoria": "SAT LECHE-CARNE 2",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 45,
+    "rut": "14318546-K",
+    "nombres": "MARCOS ARMANO",
+    "apellidos": "VALENZUELA OYARZO",
+    "telefono": "962097673",
+    "correo": "",
+    "localidad": "PALO HUECO",
+    "comuna": "MAULLIN",
+    "direccion": "PALO HUECO",
+    "fechaNacimiento": "1981-11-08",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Media Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2012-11-22",
+    "plantaEntrega": "COLUN",
+    "rup": "10-1-08-2357",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 46,
+    "rut": "7086013-9",
+    "nombres": "MANUEL DE JESUS",
+    "apellidos": "VARGAS SALDIVIA",
+    "telefono": "947732222",
+    "correo": "",
+    "localidad": "PASAJE EL LEON",
+    "comuna": "LOS MUERMOS",
+    "direccion": "PASAJE EL LEON",
+    "fechaNacimiento": "1954-05-04",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Básica Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2012-11-29",
+    "plantaEntrega": "QUESERA",
+    "rup": "10-1-06-1113",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 47,
+    "rut": "15284198-1",
+    "nombres": "ELIANA ISABEL",
+    "apellidos": "VARGAS VARGAS",
+    "telefono": "978279496",
+    "correo": "",
+    "localidad": "CUMBRE ALTA",
+    "comuna": "LOS MUERMOS",
+    "direccion": "CUMBRE ALTA",
+    "fechaNacimiento": "1985-07-18",
+    "estadoCivil": "Casado",
+    "genero": "Femenino",
+    "etnia": "No",
+    "estudios": "Media Completa",
+    "profesion": "",
+    "fechaInicioActividades": "2012-11-29",
+    "plantaEntrega": "NESTLE",
+    "rup": "10-1-06-1723",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 48,
+    "rut": "11309586-5",
+    "nombres": "NICOLAS SEGUNDO",
+    "apellidos": "VERA MANCILLA",
+    "telefono": "981136305",
+    "correo": "",
+    "localidad": "CULULIL",
+    "comuna": "LOS MUERMOS",
+    "direccion": "CULULIL",
+    "fechaNacimiento": "1973-10-14",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Básica Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2012-12-04",
+    "plantaEntrega": "QUESERA",
+    "rup": "10-1-06-1008",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 49,
+    "rut": "11543591-4",
+    "nombres": "MARIO DANILO",
+    "apellidos": "VERA MANCILLA",
+    "telefono": "961720191",
+    "correo": "",
+    "localidad": "CULULIL",
+    "comuna": "LOS MUERMOS",
+    "direccion": "CULULIL",
+    "fechaNacimiento": "1974-09-08",
+    "estadoCivil": "Casado",
+    "genero": "Masculino",
+    "etnia": "No",
+    "estudios": "Básica Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2010-10-06",
+    "plantaEntrega": "COLUN",
+    "rup": "10-1-06-2331",
+    "grupoAsesoria": "SAT LECHE-CARNE 2",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 50,
+    "rut": "7731845-3",
+    "nombres": "MARIA SOLEDAD",
+    "apellidos": "VIVANCO BARRIA",
+    "telefono": "997396742",
+    "correo": "",
+    "localidad": "BISMARCK",
+    "comuna": "LOS MUERMOS",
+    "direccion": "BISMARCK",
+    "fechaNacimiento": "1958-11-17",
+    "estadoCivil": "Casado",
+    "genero": "Femenino",
+    "etnia": "No",
+    "estudios": "Básica Incompleta",
+    "profesion": "",
+    "fechaInicioActividades": "2010-11-02",
+    "plantaEntrega": "QUESERA",
+    "rup": "10-1-06-1815",
+    "grupoAsesoria": "SAT LECHE-CARNE 2",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  },
+  {
+    "id": 51,
+    "rut": "15284198-1",
+    "nombres": "ELIANA DE LOS A.",
+    "apellidos": "VIVANCO PAILAMANQUE",
+    "telefono": "994145149",
+    "correo": "",
+    "localidad": "PALO HUECO",
+    "comuna": "MAULLIN",
+    "direccion": "PALO HUECO",
+    "fechaNacimiento": "1985-11-08",
+    "estadoCivil": "Casado",
+    "genero": "Femenino",
+    "etnia": "No",
+    "estudios": "Tecnico Profesional",
+    "profesion": "",
+    "fechaInicioActividades": "2012-11-22",
+    "plantaEntrega": "COLUN",
+    "rup": "10-1-08-2580",
+    "grupoAsesoria": "SAT LECHE-CARNE 1",
+    "asesorEncargado": "EDUARDO HIDALGO",
+    "predios": []
+  }
 ];
+
+const estadoCivilOptions = ["Casado", "Divorciado", "Separado", "Soltero", "Conviviente"];
+const generoOptions = ["Masculino", "Femenino", "Otro"];
+const estudioOptions = [
+  "Sin estudios",
+  "Básica incompleta",
+  "Básica completa",
+  "Media incompleta",
+  "Media completa",
+  "Técnica incompleta",
+  "Técnica completa",
+  "Universitaria incompleta",
+  "Universitaria completa",
+];
+const tenenciaOptions = ["Propio", "Arriendo", "Comodato", "Usufructo", "Ocupante"];
+const rubroOptions = ["Leche", "Carne", "Agricultura", "Otros"];
 
 function normalizeText(text) {
   return (text || "")
-    .toString()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[̀-ͯ]/g, "")
     .toLowerCase()
     .trim();
 }
 
-function scoreMatch(farmer, query) {
-  const q = normalizeText(query);
-  if (!q) return 1;
-
-  const fullName = normalizeText(`${farmer.nombres} ${farmer.apellidos}`);
-  const nombres = normalizeText(farmer.nombres);
-  const apellidos = normalizeText(farmer.apellidos);
-  const rut = normalizeText(farmer.rut);
-  const comuna = normalizeText(farmer.comuna);
-
-  if (fullName === q) return 120;
-  if (rut === q) return 115;
-  if (fullName.startsWith(q)) return 100;
-  if (apellidos.startsWith(q)) return 95;
-  if (nombres.startsWith(q)) return 90;
-  if (fullName.includes(q)) return 80;
-  if (apellidos.includes(q)) return 75;
-  if (nombres.includes(q)) return 70;
-  if (rut.includes(q)) return 65;
-  if (comuna.includes(q)) return 50;
-
-  const parts = q.split(/\s+/).filter(Boolean);
-  if (parts.length > 1) {
-    const allInName = parts.every((part) => fullName.includes(part));
-    if (allInName) return 85;
-  }
-
-  return 0;
+function calculateAge(dateString) {
+  if (!dateString) return "";
+  const today = new Date();
+  const birth = new Date(dateString);
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+  return age;
 }
 
-function LoginPage({ onLogin }) {
-  const [user, setUser] = useState("admin");
-  const [password, setPassword] = useState("admin123");
-
+function FarmerSummary({ farmer, isSelected, onOpen }) {
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md"
-      >
-        <Card className="rounded-2xl shadow-xl border-0">
-          <CardHeader className="space-y-3 text-center">
-            <div className="mx-auto h-14 w-14 rounded-2xl bg-slate-900 text-white flex items-center justify-center">
-              <User className="h-7 w-7" />
-            </div>
-            <div>
-              <CardTitle className="text-2xl">Sistema Agrícola</CardTitle>
-              <p className="text-sm text-slate-500 mt-1">Ingreso administrador</p>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Usuario</Label>
-              <Input value={user} onChange={(e) => setUser(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>Clave</Label>
-              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-            </div>
-            <Button className="w-full rounded-xl" onClick={() => onLogin(user, password)}>
-              Entrar
-            </Button>
-            <p className="text-xs text-slate-500 text-center">Demo: admin / admin123</p>
-          </CardContent>
-        </Card>
-      </motion.div>
+    <Card className={`rounded-2xl border-0 shadow-sm transition ${isSelected ? "bg-emerald-50 ring-2 ring-emerald-200" : "bg-white hover:shadow-md"}`}>
+      <CardContent className="p-4 flex items-center justify-between gap-4">
+        <div className="min-w-0">
+          <div className="font-semibold text-slate-900 truncate">{farmer.nombres} {farmer.apellidos}</div>
+          <div className="text-sm text-slate-500">RUT: {farmer.rut}</div>
+          <div className="text-sm text-slate-500">{farmer.localidad} · {farmer.comuna}</div>
+        </div>
+        <Button onClick={onOpen} className="rounded-xl">Ficha del agricultor</Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+function Field({ label, value }) {
+  return (
+    <div className="space-y-1">
+      <div className="text-xs uppercase tracking-wide text-slate-500">{label}</div>
+      <div className="font-medium text-slate-900 break-words">{value || "—"}</div>
     </div>
   );
 }
 
-function AdminPage({ farmers, search, setSearch, onOpenCreate, onSelectFarmer, onLogout }) {
-  const filteredFarmers = useMemo(() => {
-    return [...farmers]
-      .map((farmer) => ({ farmer, score: scoreMatch(farmer, search) }))
-      .filter((item) => item.score > 0)
-      .sort((a, b) => b.score - a.score || a.farmer.apellidos.localeCompare(b.farmer.apellidos, "es"));
-  }, [farmers, search]);
-
+function PredioCard({ predio, onEdit, onDelete }) {
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <Card className="rounded-2xl border-0 shadow-sm bg-slate-50">
+      <CardContent className="p-4 space-y-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Panel administrador</h1>
-            <p className="text-slate-600 mt-1">Buscar agricultor, revisar ficha y crear nuevos registros.</p>
+            <div className="font-semibold text-slate-900">{predio.nombre}</div>
+            <div className="text-sm text-slate-500">ROL: {predio.rol}</div>
           </div>
-          <div className="flex gap-3">
-            <Button variant="outline" className="rounded-xl" onClick={onLogout}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Salir
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            <Badge variant="secondary" className="rounded-full">{predio.tenencia}</Badge>
+            <Button variant="outline" size="sm" className="rounded-xl" onClick={onEdit}>
+              <Pencil className="h-4 w-4 mr-2" /> Editar
             </Button>
-            <Button className="rounded-xl" onClick={onOpenCreate}>
-              <Plus className="h-4 w-4 mr-2" />
-              Crear agricultor
+            <Button
+              variant="destructive"
+              size="sm"
+              className="rounded-xl"
+              onClick={() => {
+                if (window.confirm("¿Eliminar este predio?")) onDelete();
+              }}
+            >
+              <Trash2 className="h-4 w-4 mr-2" /> Eliminar
             </Button>
           </div>
         </div>
 
-        <Card className="rounded-2xl border-0 shadow-sm">
-          <CardContent className="p-5">
-            <div className="flex gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Buscar por nombre, apellido, RUT o comuna"
-                  className="pl-10 rounded-xl h-11"
-                />
-              </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+          <Field label="Hectáreas totales" value={`${predio.hectareasTotales} ha`} />
+          <Field label="Hectáreas arables" value={`${predio.hectareasArables} ha`} />
+          <Field label="Coordenadas" value={predio.coordenadas} />
+          <Field label="Documentos" value={predio.documentos?.length ? predio.documentos.join(", ") : "Sin documentos"} />
+        </div>
+
+        <div className="space-y-2">
+          <div className="text-xs uppercase tracking-wide text-slate-500">Rubros asignados</div>
+          <div className="flex flex-wrap gap-2">
+            {predio.rubros.map((r, i) => (
+              <Badge key={i} className="rounded-full bg-emerald-100 text-emerald-800 hover:bg-emerald-100">
+                {r.tipo}: {r.hectareas} ha
+              </Badge>
+            ))}
+          </div>
+        </div>
+
+        <div className="text-sm text-slate-600">{predio.observaciones || "Sin observaciones."}</div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function emptyFarmerForm() {
+  return {
+    rut: "",
+    nombres: "",
+    apellidos: "",
+    telefono: "",
+    correo: "",
+    localidad: "",
+    comuna: "",
+    direccion: "",
+    fechaNacimiento: "",
+    estadoCivil: "Casado",
+    genero: "Masculino",
+    etnia: "",
+    estudios: "Media completa",
+    profesion: "",
+    fechaInicioActividades: "",
+    plantaEntrega: "",
+    rup: "",
+    grupoAsesoria: "",
+    asesorEncargado: "",
+  };
+}
+
+function emptyPredioForm() {
+  return {
+    nombre: "",
+    rol: "",
+    hectareasTotales: "",
+    hectareasArables: "",
+    coordenadas: "",
+    tenencia: "Propio",
+    documentos: [],
+    observaciones: "",
+    rubros: rubroOptions.map((tipo) => ({ tipo, hectareas: "" })),
+  };
+}
+
+export default function SistemaAgricolaWeb() {
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [query, setQuery] = useState("");
+  const [farmers, setFarmers] = useState(() => {
+    if (typeof window === "undefined") return initialFarmers;
+    const saved = window.localStorage.getItem("sistema-agricola-farmers");
+    if (!saved) return initialFarmers;
+    try {
+      const parsed = JSON.parse(saved);
+      return Array.isArray(parsed) && parsed.length ? parsed : initialFarmers;
+    } catch {
+      return initialFarmers;
+    }
+  });
+  const [selectedFarmerId, setSelectedFarmerId] = useState(() => {
+    if (typeof window === "undefined") return initialFarmers[0].id;
+    const saved = window.localStorage.getItem("sistema-agricola-selected-farmer-id");
+    return saved ? Number(saved) : initialFarmers[0].id;
+  });
+  const [openNewFarmer, setOpenNewFarmer] = useState(false);
+  const [openNewPredio, setOpenNewPredio] = useState(false);
+  const [editingFarmer, setEditingFarmer] = useState(false);
+  const [editingPredioId, setEditingPredioId] = useState(null);
+  const [newFarmer, setNewFarmer] = useState(emptyFarmerForm());
+  const [newPredio, setNewPredio] = useState(emptyPredioForm());
+  const [editFarmerForm, setEditFarmerForm] = useState(null);
+
+  const filteredFarmers = useMemo(() => {
+    const q = normalizeText(query);
+    if (!q) return farmers;
+    return farmers.filter((f) => {
+      const pool = normalizeText([
+        f.rut,
+        f.nombres,
+        f.apellidos,
+        f.telefono,
+        f.correo,
+        f.localidad,
+        f.comuna,
+        f.direccion,
+      ].join(" "));
+      return pool.includes(q);
+    });
+  }, [query, farmers]);
+
+  const selectedFarmer = farmers.find((f) => f.id === selectedFarmerId) || filteredFarmers[0] || null;
+
+  useEffect(() => {
+    if (selectedFarmer && !editingFarmer) {
+      setEditFarmerForm({ ...selectedFarmer });
+    }
+  }, [selectedFarmer, editingFarmer]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("sistema-agricola-farmers", JSON.stringify(farmers));
+  }, [farmers]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("sistema-agricola-selected-farmer-id", String(selectedFarmerId));
+  }, [selectedFarmerId]);
+
+  const resumenRubros = useMemo(() => {
+    if (!selectedFarmer) return [];
+    const acum = {};
+    selectedFarmer.predios.forEach((predio) => {
+      predio.rubros.forEach((rubro) => {
+        acum[rubro.tipo] = (acum[rubro.tipo] || 0) + Number(rubro.hectareas || 0);
+      });
+    });
+    return rubroOptions
+      .map((tipo) => ({ tipo, hectareas: acum[tipo] || 0 }))
+      .filter((r) => r.hectareas > 0);
+  }, [selectedFarmer]);
+
+  const saveNewFarmer = () => {
+    if (!newFarmer.nombres || !newFarmer.apellidos || !newFarmer.rut) return;
+    const created = {
+      id: Date.now(),
+      ...newFarmer,
+      predios: [],
+    };
+    setFarmers((prev) => [created, ...prev]);
+    setSelectedFarmerId(created.id);
+    setOpenNewFarmer(false);
+    setNewFarmer(emptyFarmerForm());
+  };
+
+  const saveEditedFarmer = () => {
+    if (!selectedFarmer || !editFarmerForm?.nombres || !editFarmerForm?.apellidos || !editFarmerForm?.rut) return;
+    setFarmers((prev) => prev.map((f) => (f.id === selectedFarmer.id ? { ...f, ...editFarmerForm, predios: f.predios } : f)));
+    setEditingFarmer(false);
+  };
+
+  const saveNewPredio = () => {
+    if (!selectedFarmer || !newPredio.nombre || !newPredio.rol) return;
+
+    const rubrosActivos = newPredio.rubros
+      .filter((r) => Number(r.hectareas) > 0)
+      .map((r) => ({ tipo: r.tipo, hectareas: Number(r.hectareas) }));
+
+    const totalRubros = rubrosActivos.reduce((sum, r) => sum + r.hectareas, 0);
+    const hectareasTotales = Number(newPredio.hectareasTotales || 0);
+    const hectareasArables = Number(newPredio.hectareasArables || 0);
+
+    if (totalRubros > hectareasTotales) {
+      alert("La suma de hectáreas por rubro no puede superar las hectáreas totales del predio.");
+      return;
+    }
+
+    if (hectareasArables > hectareasTotales) {
+      alert("Las hectáreas arables no pueden superar las hectáreas totales del predio.");
+      return;
+    }
+
+    const createdPredio = {
+      id: editingPredioId || Date.now(),
+      nombre: newPredio.nombre,
+      rol: newPredio.rol,
+      hectareasTotales,
+      hectareasArables,
+      coordenadas: newPredio.coordenadas,
+      tenencia: newPredio.tenencia,
+      documentos: newPredio.documentos,
+      observaciones: newPredio.observaciones,
+      rubros: rubrosActivos,
+    };
+
+    setFarmers((prev) =>
+      prev.map((f) => {
+        if (f.id !== selectedFarmer.id) return f;
+        if (editingPredioId) {
+          return {
+            ...f,
+            predios: f.predios.map((p) => (p.id === editingPredioId ? createdPredio : p)),
+          };
+        }
+        return { ...f, predios: [...f.predios, createdPredio] };
+      })
+    );
+
+    setOpenNewPredio(false);
+    setEditingPredioId(null);
+    setNewPredio(emptyPredioForm());
+  };
+
+  const openEditPredio = (predio) => {
+    setEditingPredioId(predio.id);
+    setNewPredio({
+      nombre: predio.nombre,
+      rol: predio.rol,
+      hectareasTotales: String(predio.hectareasTotales || ""),
+      hectareasArables: String(predio.hectareasArables || ""),
+      coordenadas: predio.coordenadas || "",
+      tenencia: predio.tenencia || "Propio",
+      documentos: predio.documentos || [],
+      observaciones: predio.observaciones || "",
+      rubros: rubroOptions.map((tipo) => {
+        const match = predio.rubros.find((r) => r.tipo === tipo);
+        return { tipo, hectareas: match ? String(match.hectareas) : "" };
+      }),
+    });
+    setOpenNewPredio(true);
+  };
+
+  const deletePredio = (predioId) => {
+    if (!selectedFarmer) return;
+    setFarmers((prev) =>
+      prev.map((f) =>
+        f.id === selectedFarmer.id
+          ? { ...f, predios: f.predios.filter((p) => p.id !== predioId) }
+          : f
+      )
+    );
+
+    if (editingPredioId === predioId) {
+      setEditingPredioId(null);
+      setNewPredio(emptyPredioForm());
+      setOpenNewPredio(false);
+    }
+  };
+
+  const resetDemoData = () => {
+    if (!window.confirm("¿Restablecer la demo y borrar los cambios guardados en este navegador?")) return;
+    window.localStorage.removeItem("sistema-agricola-farmers");
+    window.localStorage.removeItem("sistema-agricola-selected-farmer-id");
+    setFarmers(initialFarmers);
+    setSelectedFarmerId(initialFarmers[0].id);
+    setEditingFarmer(false);
+    setEditingPredioId(null);
+    setNewFarmer(emptyFarmerForm());
+    setNewPredio(emptyPredioForm());
+    setQuery("");
+  };
+
+  if (!loggedIn) {
+    return (
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center p-6">
+        <Card className="w-full max-w-md rounded-3xl border-0 shadow-xl bg-white">
+          <CardHeader className="space-y-3 text-center pb-2">
+            <div className="mx-auto h-16 w-16 rounded-2xl bg-emerald-100 flex items-center justify-center">
+              <Tractor className="h-8 w-8 text-emerald-700" />
+            </div>
+            <CardTitle className="text-2xl">Sistema Agrícola</CardTitle>
+            <p className="text-slate-500">Acceso administrador para ficha del agricultor y predios</p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>Usuario</Label>
+              <Input placeholder="admin" defaultValue="admin" />
+            </div>
+            <div className="space-y-2">
+              <Label>Contraseña</Label>
+              <Input type="password" placeholder="••••••••" defaultValue="admin123" />
+            </div>
+            <Button className="w-full rounded-2xl h-11" onClick={() => setLoggedIn(true)}>
+              Ingresar al sistema
+            </Button>
+            <div className="text-xs text-slate-500 text-center">
+              Los cambios quedan guardados en este navegador, incluso si recargas la página.
             </div>
           </CardContent>
         </Card>
+      </div>
+    );
+  }
 
-        <div className="grid gap-4">
-          {filteredFarmers.length === 0 ? (
-            <Card className="rounded-2xl border-dashed">
-              <CardContent className="p-8 text-center text-slate-500">
-                No se encontraron agricultores con esa búsqueda.
-              </CardContent>
+  return (
+    <div className="min-h-screen bg-slate-100">
+      <div className="border-b bg-white/90 backdrop-blur sticky top-0 z-20">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="h-11 w-11 rounded-2xl bg-emerald-100 flex items-center justify-center shrink-0">
+              <Home className="h-5 w-5 text-emerald-700" />
+            </div>
+            <div className="min-w-0">
+              <div className="font-semibold text-slate-900 truncate">Sistema Agrícola</div>
+              <div className="text-sm text-slate-500 truncate">Portal administrador</div>
+            </div>
+          </div>
+          <div className="flex gap-2 flex-wrap justify-end">
+            <Button variant="outline" className="rounded-2xl" onClick={resetDemoData}>
+              Restablecer demo
+            </Button>
+            <Button variant="outline" className="rounded-2xl" onClick={() => setLoggedIn(false)}>
+              <LogOut className="h-4 w-4 mr-2" /> Salir
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 grid grid-cols-1 xl:grid-cols-[360px_1fr] gap-6">
+        <div className="space-y-5">
+          <Card className="rounded-3xl border-0 shadow-sm bg-white">
+            <CardHeader>
+              <CardTitle className="text-lg">Agricultores</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Buscar por nombre, apellido, RUT, comuna..."
+                  className="pl-9 rounded-2xl"
+                />
+              </div>
+
+              <Dialog open={openNewFarmer} onOpenChange={setOpenNewFarmer}>
+                <DialogTrigger asChild>
+                  <Button className="w-full rounded-2xl">
+                    <Plus className="h-4 w-4 mr-2" /> Crear agricultor
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl rounded-3xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Nueva ficha de agricultor</DialogTitle>
+                  </DialogHeader>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                    <div className="space-y-2"><Label>Nombres</Label><Input value={newFarmer.nombres} onChange={(e) => setNewFarmer({ ...newFarmer, nombres: e.target.value })} /></div>
+                    <div className="space-y-2"><Label>Apellidos</Label><Input value={newFarmer.apellidos} onChange={(e) => setNewFarmer({ ...newFarmer, apellidos: e.target.value })} /></div>
+                    <div className="space-y-2"><Label>RUT</Label><Input value={newFarmer.rut} onChange={(e) => setNewFarmer({ ...newFarmer, rut: e.target.value })} /></div>
+                    <div className="space-y-2"><Label>Teléfono</Label><Input value={newFarmer.telefono} onChange={(e) => setNewFarmer({ ...newFarmer, telefono: e.target.value })} /></div>
+                    <div className="space-y-2"><Label>Correo electrónico</Label><Input value={newFarmer.correo} onChange={(e) => setNewFarmer({ ...newFarmer, correo: e.target.value })} /></div>
+                    <div className="space-y-2"><Label>Localidad</Label><Input value={newFarmer.localidad} onChange={(e) => setNewFarmer({ ...newFarmer, localidad: e.target.value })} /></div>
+                    <div className="space-y-2"><Label>Comuna</Label><Input value={newFarmer.comuna} onChange={(e) => setNewFarmer({ ...newFarmer, comuna: e.target.value })} /></div>
+                    <div className="space-y-2"><Label>Dirección</Label><Input value={newFarmer.direccion} onChange={(e) => setNewFarmer({ ...newFarmer, direccion: e.target.value })} /></div>
+                    <div className="space-y-2"><Label>Fecha de nacimiento</Label><Input type="date" value={newFarmer.fechaNacimiento} onChange={(e) => setNewFarmer({ ...newFarmer, fechaNacimiento: e.target.value })} /></div>
+                    <div className="space-y-2"><Label>Estado civil</Label><Select value={newFarmer.estadoCivil} onValueChange={(v) => setNewFarmer({ ...newFarmer, estadoCivil: v })}><SelectTrigger className="rounded-2xl"><SelectValue /></SelectTrigger><SelectContent>{estadoCivilOptions.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent></Select></div>
+                    <div className="space-y-2"><Label>Género</Label><Select value={newFarmer.genero} onValueChange={(v) => setNewFarmer({ ...newFarmer, genero: v })}><SelectTrigger className="rounded-2xl"><SelectValue /></SelectTrigger><SelectContent>{generoOptions.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent></Select></div>
+                    <div className="space-y-2"><Label>Etnia</Label><Input value={newFarmer.etnia} onChange={(e) => setNewFarmer({ ...newFarmer, etnia: e.target.value })} /></div>
+                    <div className="space-y-2"><Label>Estudios</Label><Select value={newFarmer.estudios} onValueChange={(v) => setNewFarmer({ ...newFarmer, estudios: v })}><SelectTrigger className="rounded-2xl"><SelectValue /></SelectTrigger><SelectContent>{estudioOptions.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent></Select></div>
+                    <div className="space-y-2"><Label>Profesión</Label><Input value={newFarmer.profesion} onChange={(e) => setNewFarmer({ ...newFarmer, profesion: e.target.value })} /></div>
+                    <div className="space-y-2"><Label>Fecha inicio de actividades</Label><Input type="date" value={newFarmer.fechaInicioActividades} onChange={(e) => setNewFarmer({ ...newFarmer, fechaInicioActividades: e.target.value })} /></div>
+                    <div className="space-y-2"><Label>Planta de entrega</Label><Input value={newFarmer.plantaEntrega} onChange={(e) => setNewFarmer({ ...newFarmer, plantaEntrega: e.target.value })} /></div>
+                    <div className="space-y-2"><Label>R.U.P.</Label><Input value={newFarmer.rup} onChange={(e) => setNewFarmer({ ...newFarmer, rup: e.target.value })} /></div>
+                    <div className="space-y-2"><Label>Grupo de asesoría</Label><Input value={newFarmer.grupoAsesoria} onChange={(e) => setNewFarmer({ ...newFarmer, grupoAsesoria: e.target.value })} /></div>
+                    <div className="space-y-2"><Label>Asesor encargado</Label><Input value={newFarmer.asesorEncargado} onChange={(e) => setNewFarmer({ ...newFarmer, asesorEncargado: e.target.value })} /></div>
+                  </div>
+                  <div className="flex justify-end pt-6">
+                    <Button className="rounded-2xl" onClick={saveNewFarmer}>Guardar agricultor</Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+                {filteredFarmers.map((farmer) => (
+                  <FarmerSummary
+                    key={farmer.id}
+                    farmer={farmer}
+                    isSelected={farmer.id === selectedFarmer?.id}
+                    onOpen={() => setSelectedFarmerId(farmer.id)}
+                  />
+                ))}
+                {!filteredFarmers.length && (
+                  <div className="text-sm text-slate-500 text-center py-8">No se encontraron agricultores con esa búsqueda.</div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div>
+          {!selectedFarmer ? (
+            <Card className="rounded-3xl border-0 shadow-sm bg-white">
+              <CardContent className="p-10 text-center text-slate-500">Seleccione un agricultor para ver su ficha.</CardContent>
             </Card>
           ) : (
-            filteredFarmers.map(({ farmer }) => (
-              <motion.div key={farmer.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-                <Card className="rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow cursor-pointer" onClick={() => onSelectFarmer(farmer)}>
-                  <CardContent className="p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className="text-xl font-semibold">{farmer.nombres} {farmer.apellidos}</h2>
-                        <Badge variant="secondary" className="rounded-full">{farmer.rubro}</Badge>
+            <Tabs defaultValue="ficha" className="space-y-5">
+              <TabsList className="rounded-2xl bg-white shadow-sm border p-1 h-auto">
+                <TabsTrigger value="ficha" className="rounded-xl">Ficha del agricultor</TabsTrigger>
+                <TabsTrigger value="predios" className="rounded-xl">Predios</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="ficha">
+                <Card className="rounded-3xl border-0 shadow-sm bg-white">
+                  <CardHeader className="pb-3">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div>
+                        <CardTitle className="text-2xl">{selectedFarmer.nombres} {selectedFarmer.apellidos}</CardTitle>
+                        <p className="text-slate-500 mt-1">Ficha principal del agricultor</p>
                       </div>
-                      <div className="text-sm text-slate-600 flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4">
-                        <span>RUT: {farmer.rut}</span>
-                        <span>Tel: {farmer.telefono}</span>
-                        <span>Comuna: {farmer.comuna}</span>
+                      <div className="flex gap-2 flex-wrap">
+                        <Badge className="rounded-full bg-sky-100 text-sky-800 hover:bg-sky-100">{selectedFarmer.comuna}</Badge>
+                        <Badge className="rounded-full bg-emerald-100 text-emerald-800 hover:bg-emerald-100">{selectedFarmer.grupoAsesoria || "Sin grupo"}</Badge>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" className="rounded-xl" onClick={(e) => { e.stopPropagation(); onSelectFarmer(farmer); }}>
-                        Ver ficha
-                      </Button>
+                  </CardHeader>
+                  <CardContent className="space-y-8">
+                    <div className="flex flex-wrap justify-end gap-2">
+                      {!editingFarmer ? (
+                        <Button variant="outline" className="rounded-2xl" onClick={() => setEditingFarmer(true)}>
+                          <Pencil className="h-4 w-4 mr-2" /> Editar ficha
+                        </Button>
+                      ) : (
+                        <>
+                          <Button variant="outline" className="rounded-2xl" onClick={() => {
+                            setEditingFarmer(false);
+                            setEditFarmerForm({ ...selectedFarmer });
+                          }}>
+                            <X className="h-4 w-4 mr-2" /> Cancelar
+                          </Button>
+                          <Button className="rounded-2xl" onClick={saveEditedFarmer}>
+                            <Save className="h-4 w-4 mr-2" /> Guardar cambios
+                          </Button>
+                        </>
+                      )}
                     </div>
+
+                    {!editingFarmer ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+                        <Field label="Nombres" value={selectedFarmer.nombres} />
+                        <Field label="Apellidos" value={selectedFarmer.apellidos} />
+                        <Field label="RUT" value={selectedFarmer.rut} />
+                        <Field label="Teléfono" value={selectedFarmer.telefono} />
+                        <Field label="Correo electrónico" value={selectedFarmer.correo} />
+                        <Field label="Localidad" value={selectedFarmer.localidad} />
+                        <Field label="Comuna" value={selectedFarmer.comuna} />
+                        <Field label="Dirección" value={selectedFarmer.direccion} />
+                        <Field label="Fecha de nacimiento" value={selectedFarmer.fechaNacimiento} />
+                        <Field label="Edad" value={calculateAge(selectedFarmer.fechaNacimiento) ? `${calculateAge(selectedFarmer.fechaNacimiento)} años` : "—"} />
+                        <Field label="Estado civil" value={selectedFarmer.estadoCivil} />
+                        <Field label="Género" value={selectedFarmer.genero} />
+                        <Field label="Etnia" value={selectedFarmer.etnia} />
+                        <Field label="Estudios" value={selectedFarmer.estudios} />
+                        <Field label="Profesión" value={selectedFarmer.profesion} />
+                        <Field label="Fecha inicio de actividades" value={selectedFarmer.fechaInicioActividades} />
+                        <Field label="Planta de entrega" value={selectedFarmer.plantaEntrega} />
+                        <Field label="R.U.P." value={selectedFarmer.rup} />
+                        <Field label="Grupo de asesoría" value={selectedFarmer.grupoAsesoria} />
+                        <Field label="Asesor encargado" value={selectedFarmer.asesorEncargado} />
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                        <div className="space-y-2"><Label>Nombres</Label><Input value={editFarmerForm?.nombres || ""} onChange={(e) => setEditFarmerForm({ ...editFarmerForm, nombres: e.target.value })} /></div>
+                        <div className="space-y-2"><Label>Apellidos</Label><Input value={editFarmerForm?.apellidos || ""} onChange={(e) => setEditFarmerForm({ ...editFarmerForm, apellidos: e.target.value })} /></div>
+                        <div className="space-y-2"><Label>RUT</Label><Input value={editFarmerForm?.rut || ""} onChange={(e) => setEditFarmerForm({ ...editFarmerForm, rut: e.target.value })} /></div>
+                        <div className="space-y-2"><Label>Teléfono</Label><Input value={editFarmerForm?.telefono || ""} onChange={(e) => setEditFarmerForm({ ...editFarmerForm, telefono: e.target.value })} /></div>
+                        <div className="space-y-2"><Label>Correo electrónico</Label><Input value={editFarmerForm?.correo || ""} onChange={(e) => setEditFarmerForm({ ...editFarmerForm, correo: e.target.value })} /></div>
+                        <div className="space-y-2"><Label>Localidad</Label><Input value={editFarmerForm?.localidad || ""} onChange={(e) => setEditFarmerForm({ ...editFarmerForm, localidad: e.target.value })} /></div>
+                        <div className="space-y-2"><Label>Comuna</Label><Input value={editFarmerForm?.comuna || ""} onChange={(e) => setEditFarmerForm({ ...editFarmerForm, comuna: e.target.value })} /></div>
+                        <div className="space-y-2"><Label>Dirección</Label><Input value={editFarmerForm?.direccion || ""} onChange={(e) => setEditFarmerForm({ ...editFarmerForm, direccion: e.target.value })} /></div>
+                        <div className="space-y-2"><Label>Fecha de nacimiento</Label><Input type="date" value={editFarmerForm?.fechaNacimiento || ""} onChange={(e) => setEditFarmerForm({ ...editFarmerForm, fechaNacimiento: e.target.value })} /></div>
+                        <div className="space-y-2"><Label>Estado civil</Label><Select value={editFarmerForm?.estadoCivil || "Casado"} onValueChange={(v) => setEditFarmerForm({ ...editFarmerForm, estadoCivil: v })}><SelectTrigger className="rounded-2xl"><SelectValue /></SelectTrigger><SelectContent>{estadoCivilOptions.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent></Select></div>
+                        <div className="space-y-2"><Label>Género</Label><Select value={editFarmerForm?.genero || "Masculino"} onValueChange={(v) => setEditFarmerForm({ ...editFarmerForm, genero: v })}><SelectTrigger className="rounded-2xl"><SelectValue /></SelectTrigger><SelectContent>{generoOptions.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent></Select></div>
+                        <div className="space-y-2"><Label>Etnia</Label><Input value={editFarmerForm?.etnia || ""} onChange={(e) => setEditFarmerForm({ ...editFarmerForm, etnia: e.target.value })} /></div>
+                        <div className="space-y-2"><Label>Estudios</Label><Select value={editFarmerForm?.estudios || "Media completa"} onValueChange={(v) => setEditFarmerForm({ ...editFarmerForm, estudios: v })}><SelectTrigger className="rounded-2xl"><SelectValue /></SelectTrigger><SelectContent>{estudioOptions.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent></Select></div>
+                        <div className="space-y-2"><Label>Profesión</Label><Input value={editFarmerForm?.profesion || ""} onChange={(e) => setEditFarmerForm({ ...editFarmerForm, profesion: e.target.value })} /></div>
+                        <div className="space-y-2"><Label>Fecha inicio de actividades</Label><Input type="date" value={editFarmerForm?.fechaInicioActividades || ""} onChange={(e) => setEditFarmerForm({ ...editFarmerForm, fechaInicioActividades: e.target.value })} /></div>
+                        <div className="space-y-2"><Label>Planta de entrega</Label><Input value={editFarmerForm?.plantaEntrega || ""} onChange={(e) => setEditFarmerForm({ ...editFarmerForm, plantaEntrega: e.target.value })} /></div>
+                        <div className="space-y-2"><Label>R.U.P.</Label><Input value={editFarmerForm?.rup || ""} onChange={(e) => setEditFarmerForm({ ...editFarmerForm, rup: e.target.value })} /></div>
+                        <div className="space-y-2"><Label>Grupo de asesoría</Label><Input value={editFarmerForm?.grupoAsesoria || ""} onChange={(e) => setEditFarmerForm({ ...editFarmerForm, grupoAsesoria: e.target.value })} /></div>
+                        <div className="space-y-2"><Label>Asesor encargado</Label><Input value={editFarmerForm?.asesorEncargado || ""} onChange={(e) => setEditFarmerForm({ ...editFarmerForm, asesorEncargado: e.target.value })} /></div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
-              </motion.div>
-            ))
+              </TabsContent>
+
+              <TabsContent value="predios">
+                <div className="space-y-5">
+                  <Card className="rounded-3xl border-0 shadow-sm bg-white">
+                    <CardHeader className="pb-3">
+                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div>
+                          <CardTitle className="text-2xl">Predios de {selectedFarmer.nombres}</CardTitle>
+                          <p className="text-slate-500 mt-1">Coordenadas en WGS84 huso 18 UTM, tenencia y asignación por rubro</p>
+                        </div>
+                        <Dialog open={openNewPredio} onOpenChange={setOpenNewPredio}>
+                          <DialogTrigger asChild>
+                            <Button className="rounded-2xl" onClick={() => {
+                              setEditingPredioId(null);
+                              setNewPredio(emptyPredioForm());
+                            }}>
+                              <Plus className="h-4 w-4 mr-2" /> Agregar predio
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-5xl rounded-3xl max-h-[90vh] overflow-y-auto">
+                            <DialogHeader>
+                              <DialogTitle>{editingPredioId ? "Editar predio" : "Nuevo predio"}</DialogTitle>
+                            </DialogHeader>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                              <div className="space-y-2"><Label>Nombre del predio</Label><Input value={newPredio.nombre} onChange={(e) => setNewPredio({ ...newPredio, nombre: e.target.value })} /></div>
+                              <div className="space-y-2"><Label>ROL</Label><Input value={newPredio.rol} onChange={(e) => setNewPredio({ ...newPredio, rol: e.target.value })} /></div>
+                              <div className="space-y-2"><Label>Hectáreas totales</Label><Input type="number" value={newPredio.hectareasTotales} onChange={(e) => setNewPredio({ ...newPredio, hectareasTotales: e.target.value })} /></div>
+                              <div className="space-y-2"><Label>Hectáreas arables</Label><Input type="number" value={newPredio.hectareasArables} onChange={(e) => setNewPredio({ ...newPredio, hectareasArables: e.target.value })} /></div>
+                              <div className="space-y-2 md:col-span-2"><Label>Coordenadas (WGS84 huso 18 UTM)</Label><Input value={newPredio.coordenadas} onChange={(e) => setNewPredio({ ...newPredio, coordenadas: e.target.value })} placeholder="Ejemplo: 18H 665432 5401234" /></div>
+                              <div className="space-y-2"><Label>Tenencia</Label><Select value={newPredio.tenencia} onValueChange={(v) => setNewPredio({ ...newPredio, tenencia: v })}><SelectTrigger className="rounded-2xl"><SelectValue /></SelectTrigger><SelectContent>{tenenciaOptions.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent></Select></div>
+                              <div className="space-y-2"><Label>Documentos de respaldo</Label><Input type="file" multiple onChange={(e) => setNewPredio({ ...newPredio, documentos: Array.from(e.target.files || []).map((f) => f.name) })} /></div>
+                            </div>
+
+                            <div className="pt-4 space-y-3">
+                              <div className="font-medium text-slate-900">Asignación de hectáreas por rubro</div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {newPredio.rubros.map((rubro, idx) => (
+                                  <div key={rubro.tipo} className="rounded-2xl border p-4 bg-slate-50 space-y-2">
+                                    <Label>{rubro.tipo}</Label>
+                                    <Input
+                                      type="number"
+                                      value={rubro.hectareas}
+                                      onChange={(e) => {
+                                        const next = [...newPredio.rubros];
+                                        next[idx] = { ...next[idx], hectareas: e.target.value };
+                                        setNewPredio({ ...newPredio, rubros: next });
+                                      }}
+                                      placeholder="Hectáreas asignadas"
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div className="pt-4 space-y-2">
+                              <Label>Observaciones</Label>
+                              <Textarea value={newPredio.observaciones} onChange={(e) => setNewPredio({ ...newPredio, observaciones: e.target.value })} rows={4} />
+                            </div>
+
+                            <div className="flex justify-end pt-6">
+                              <Button className="rounded-2xl" onClick={saveNewPredio}>{editingPredioId ? "Guardar cambios" : "Guardar predio"}</Button>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <Card className="rounded-2xl bg-slate-50 border-0 shadow-none">
+                          <CardContent className="p-4">
+                            <div className="text-sm text-slate-500">Predios registrados</div>
+                            <div className="text-3xl font-bold mt-1">{selectedFarmer.predios.length}</div>
+                          </CardContent>
+                        </Card>
+                        <Card className="rounded-2xl bg-slate-50 border-0 shadow-none">
+                          <CardContent className="p-4">
+                            <div className="text-sm text-slate-500">Hectáreas totales</div>
+                            <div className="text-3xl font-bold mt-1">{selectedFarmer.predios.reduce((s, p) => s + (p.hectareasTotales || 0), 0)} ha</div>
+                          </CardContent>
+                        </Card>
+                        <Card className="rounded-2xl bg-slate-50 border-0 shadow-none">
+                          <CardContent className="p-4">
+                            <div className="text-sm text-slate-500">Hectáreas arables</div>
+                            <div className="text-3xl font-bold mt-1">{selectedFarmer.predios.reduce((s, p) => s + (p.hectareasArables || 0), 0)} ha</div>
+                          </CardContent>
+                        </Card>
+                      </div>
+
+                      <div className="pt-4 space-y-3">
+                        <div className="text-sm font-medium text-slate-700">Resumen de hectáreas por rubro</div>
+                        <div className="flex flex-wrap gap-2">
+                          {resumenRubros.length ? resumenRubros.map((rubro) => (
+                            <Badge key={rubro.tipo} className="rounded-full bg-emerald-100 text-emerald-800 hover:bg-emerald-100">
+                              {rubro.tipo}: {rubro.hectareas} ha
+                            </Badge>
+                          )) : <span className="text-sm text-slate-500">Aún no hay rubros asignados.</span>}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <div className="space-y-4">
+                    {selectedFarmer.predios.length ? (
+                      selectedFarmer.predios.map((predio) => (
+                        <PredioCard
+                          key={predio.id}
+                          predio={predio}
+                          onEdit={() => openEditPredio(predio)}
+                          onDelete={() => deletePredio(predio.id)}
+                        />
+                      ))
+                    ) : (
+                      <Card className="rounded-3xl border-0 shadow-sm bg-white">
+                        <CardContent className="p-10 text-center text-slate-500">
+                          Este agricultor aún no tiene predios registrados.
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
           )}
         </div>
       </div>
     </div>
   );
 }
-
-function CreateFarmerPage({ onBack, onSave }) {
-  const [form, setForm] = useState({
-    nombres: "",
-    apellidos: "",
-    rut: "",
-    telefono: "",
-    comuna: "",
-    direccion: "",
-    rubro: "Leche",
-    rubrosExplotacion: ["Leche"],
-    predios: 1,
-    observaciones: "",
-  });
-
-  function updateField(field, value) {
-    setForm((prev) => ({ ...prev, [field]: value }));
-  }
-
-  function toggleRubroExplotacion(rubro) {
-    setForm((prev) => {
-      const exists = prev.rubrosExplotacion.includes(rubro);
-      const next = exists
-        ? prev.rubrosExplotacion.filter((item) => item !== rubro)
-        : [...prev.rubrosExplotacion, rubro];
-
-      return {
-        ...prev,
-        rubrosExplotacion: next.length > 0 ? next : [rubro],
-        rubro: next.includes(prev.rubro) ? prev.rubro : (next[0] || rubro),
-      };
-    });
-  }
-
-  function handleSubmit(e) {
-    e.preventDefault();
-    if (!form.nombres.trim() || !form.apellidos.trim()) return;
-    onSave({
-      ...form,
-      rubrosExplotacion: form.rubrosExplotacion.length ? form.rubrosExplotacion : [form.rubro],
-      predios: Number(form.predios) || 0,
-    });
-  }
-
-  return (
-    <div className="min-h-screen bg-slate-50 p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Crear agricultor</h1>
-            <p className="text-slate-600 mt-1">Formulario independiente del buscador, tal como lo pediste.</p>
-          </div>
-          <Button variant="outline" className="rounded-xl" onClick={onBack}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver
-          </Button>
-        </div>
-
-        <form onSubmit={handleSubmit}>
-          <Card className="rounded-2xl border-0 shadow-sm">
-            <CardContent className="p-6 grid md:grid-cols-2 gap-5">
-              <div className="space-y-2">
-                <Label>Nombres</Label>
-                <Input value={form.nombres} onChange={(e) => updateField("nombres", e.target.value)} className="rounded-xl" />
-              </div>
-              <div className="space-y-2">
-                <Label>Apellidos</Label>
-                <Input value={form.apellidos} onChange={(e) => updateField("apellidos", e.target.value)} className="rounded-xl" />
-              </div>
-              <div className="space-y-2">
-                <Label>RUT</Label>
-                <Input value={form.rut} onChange={(e) => updateField("rut", e.target.value)} className="rounded-xl" />
-              </div>
-              <div className="space-y-2">
-                <Label>Teléfono</Label>
-                <Input value={form.telefono} onChange={(e) => updateField("telefono", e.target.value)} className="rounded-xl" />
-              </div>
-              <div className="space-y-2">
-                <Label>Comuna</Label>
-                <Input value={form.comuna} onChange={(e) => updateField("comuna", e.target.value)} className="rounded-xl" />
-              </div>
-              <div className="space-y-2">
-                <Label>Dirección</Label>
-                <Input value={form.direccion} onChange={(e) => updateField("direccion", e.target.value)} className="rounded-xl" />
-              </div>
-              <div className="space-y-2">
-                <Label>Rubro principal</Label>
-                <select
-                  value={form.rubro}
-                  onChange={(e) => updateField("rubro", e.target.value)}
-                  className="w-full h-10 rounded-xl border border-slate-200 px-3 bg-white"
-                >
-                  {form.rubrosExplotacion.map((rubro) => (
-                    <option key={rubro}>{rubro}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-2">
-                <Label>Cantidad de predios</Label>
-                <Input type="number" min={0} max={10} value={form.predios} onChange={(e) => updateField("predios", e.target.value)} className="rounded-xl" />
-              </div>
-              <div className="md:col-span-2 space-y-3">
-                <Label>Rubros de la explotación</Label>
-                <div className="flex flex-wrap gap-2">
-                  {["Leche", "Carne", "Agricultura"].map((rubro) => {
-                    const active = form.rubrosExplotacion.includes(rubro);
-                    return (
-                      <button
-                        key={rubro}
-                        type="button"
-                        onClick={() => toggleRubroExplotacion(rubro)}
-                        className={`rounded-full border px-4 py-2 text-sm transition ${active ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-700 border-slate-200"}`}
-                      >
-                        {rubro}
-                      </button>
-                    );
-                  })}
-                </div>
-                <p className="text-xs text-slate-500">Puedes dejar uno o varios rubros asociados a la explotación del agricultor.</p>
-              </div>
-              <div className="md:col-span-2 space-y-2">
-                <Label>Observaciones</Label>
-                <textarea
-                  value={form.observaciones}
-                  onChange={(e) => updateField("observaciones", e.target.value)}
-                  className="w-full min-h-[120px] rounded-xl border border-slate-200 px-3 py-2 bg-white"
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="flex justify-end mt-5">
-            <Button type="submit" className="rounded-xl">
-              <Save className="h-4 w-4 mr-2" />
-              Guardar agricultor
-            </Button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-function FarmerDetailPage({ farmer, onBack, onSavePredio, onUpdatePredio, onDeletePredio, onUpdateRubrosExplotacion }) {
-  const availableRubros = farmer?.rubrosExplotacion?.length ? farmer.rubrosExplotacion : [farmer?.rubro || "Leche"];
-  const createEmptyAsignacion = () => ({ rubro: availableRubros[0] || "Leche", hectareas: "" });
-
-  const emptyPredioForm = {
-    nombre: "",
-    rol: "",
-    comuna: farmer?.comuna || "",
-    sector: "",
-    hectareasTotales: "",
-    hectareasArables: "",
-    tenencia: "Propio",
-    avaluoFiscal: "Sí",
-    documentoTenencia: "",
-    documentoAvaluo: "",
-    asignacionesRubro: [createEmptyAsignacion()],
-  };
-
-  const [showPredioForm, setShowPredioForm] = useState(false);
-  const [editingPredioId, setEditingPredioId] = useState(null);
-  const [predioForm, setPredioForm] = useState(emptyPredioForm);
-  const [editingRubrosExplotacion, setEditingRubrosExplotacion] = useState(false);
-  const [rubrosTemp, setRubrosTemp] = useState(availableRubros);
-
-  if (!farmer) return null;
-
-  function updatePredioField(field, value) {
-    setPredioForm((prev) => ({ ...prev, [field]: value }));
-  }
-
-  function updateAsignacion(index, field, value) {
-    setPredioForm((prev) => ({
-      ...prev,
-      asignacionesRubro: prev.asignacionesRubro.map((item, i) =>
-        i === index ? { ...item, [field]: value } : item
-      ),
-    }));
-  }
-
-  function addAsignacion() {
-    setPredioForm((prev) => ({
-      ...prev,
-      asignacionesRubro: [...prev.asignacionesRubro, createEmptyAsignacion()],
-    }));
-  }
-
-  function removeAsignacion(index) {
-    setPredioForm((prev) => ({
-      ...prev,
-      asignacionesRubro:
-        prev.asignacionesRubro.length > 1
-          ? prev.asignacionesRubro.filter((_, i) => i !== index)
-          : prev.asignacionesRubro,
-    }));
-  }
-
-  function resetPredioForm() {
-    setPredioForm({
-      ...emptyPredioForm,
-      comuna: farmer.comuna || "",
-      asignacionesRubro: [createEmptyAsignacion()],
-    });
-    setEditingPredioId(null);
-  }
-
-  function openCreatePredio() {
-    if (showPredioForm && !editingPredioId) {
-      setShowPredioForm(false);
-      resetPredioForm();
-      return;
-    }
-    resetPredioForm();
-    setShowPredioForm(true);
-  }
-
-  function openEditPredio(predio) {
-    setPredioForm({
-      nombre: predio.nombre || "",
-      rol: predio.rol || "",
-      comuna: predio.comuna || farmer.comuna || "",
-      sector: predio.sector || "",
-      hectareasTotales: predio.hectareasTotales ?? "",
-      hectareasArables: predio.hectareasArables ?? "",
-      tenencia: predio.tenencia || "Propio",
-      avaluoFiscal: predio.avaluoFiscal || "Sí",
-      documentoTenencia: predio.documentoTenencia === "Sin archivo" ? "" : predio.documentoTenencia || "",
-      documentoAvaluo: predio.documentoAvaluo === "Sin archivo" ? "" : predio.documentoAvaluo || "",
-      asignacionesRubro:
-        predio.asignacionesRubro?.length
-          ? predio.asignacionesRubro.map((item) => ({ rubro: item.rubro, hectareas: item.hectareas }))
-          : [createEmptyAsignacion()],
-    });
-    setEditingPredioId(predio.id);
-    setShowPredioForm(true);
-  }
-
-  function handleCancelPredio() {
-    resetPredioForm();
-    setShowPredioForm(false);
-  }
-
-  function toggleRubroExplotacion(rubro) {
-    setRubrosTemp((prev) => {
-      const exists = prev.includes(rubro);
-      const next = exists ? prev.filter((item) => item !== rubro) : [...prev, rubro];
-      return next.length > 0 ? next : [rubro];
-    });
-  }
-
-  function handleSaveRubrosExplotacion() {
-    const rubrosFinales = rubrosTemp.length > 0 ? rubrosTemp : availableRubros;
-    onUpdateRubrosExplotacion(farmer.id, rubrosFinales);
-    setEditingRubrosExplotacion(false);
-  }
-
-  function handleCancelRubrosExplotacion() {
-    setRubrosTemp(availableRubros);
-    setEditingRubrosExplotacion(false);
-  }
-
-  function handleSavePredio(e) {
-    e.preventDefault();
-    if (!predioForm.nombre.trim() || !predioForm.rol.trim()) return;
-
-    const hectareasTotales = Number(predioForm.hectareasTotales) || 0;
-    const hectareasArables = Number(predioForm.hectareasArables) || 0;
-    const asignacionesRubro = (predioForm.asignacionesRubro || [])
-      .map((item) => ({ rubro: item.rubro, hectareas: Number(item.hectareas) || 0 }))
-      .filter((item) => item.rubro && item.hectareas > 0);
-
-    const sumaRubros = asignacionesRubro.reduce((acc, item) => acc + item.hectareas, 0);
-    const rubrosNoPermitidos = asignacionesRubro.filter((item) => !availableRubros.includes(item.rubro));
-
-    if (hectareasArables > hectareasTotales) {
-      alert("Las hectáreas arables no pueden ser mayores que las hectáreas totales del predio.");
-      return;
-    }
-
-    if (sumaRubros > hectareasArables) {
-      alert("La suma de hectáreas asignadas a rubros no puede ser mayor que las hectáreas arables del predio.");
-      return;
-    }
-
-    if (rubrosNoPermitidos.length > 0) {
-      alert("Hay rubros asignados en el predio que no están habilitados en la explotación del agricultor.");
-      return;
-    }
-
-    const payload = {
-      ...predioForm,
-      hectareasTotales,
-      hectareasArables,
-      asignacionesRubro,
-      documentoTenencia: predioForm.documentoTenencia || "Sin archivo",
-      documentoAvaluo: predioForm.documentoAvaluo || "Sin archivo",
-    };
-
-    if (editingPredioId) {
-      onUpdatePredio(farmer.id, editingPredioId, payload);
-    } else {
-      onSavePredio(farmer.id, payload);
-    }
-
-    handleCancelPredio();
-  }
-
-  const totalHectareasExplotacion = (farmer.prediosDetalle || []).reduce((acc, item) => acc + (Number(item.hectareasTotales) || 0), 0);
-  const totalHectareasArables = (farmer.prediosDetalle || []).reduce((acc, item) => acc + (Number(item.hectareasArables) || 0), 0);
-  const resumenRubros = (farmer.prediosDetalle || []).reduce((acc, predio) => {
-    (predio.asignacionesRubro || []).forEach((asignacion) => {
-      if (!asignacion?.rubro) return;
-      acc[asignacion.rubro] = (acc[asignacion.rubro] || 0) + (Number(asignacion.hectareas) || 0);
-    });
-    return acc;
-  }, {});
-
-  const rubrosResumenLista = Object.entries(resumenRubros);
-
-  return (
-    <div className="min-h-screen bg-slate-50 p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Ficha de agricultor</h1>
-            <p className="text-slate-600 mt-1">Ahora ya puedes visualizar mejor la explotación, las hectáreas arables y la asignación por rubros.</p>
-          </div>
-          <Button variant="outline" className="rounded-xl" onClick={onBack}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver al panel
-          </Button>
-        </div>
-
-        <div className="grid lg:grid-cols-3 gap-5">
-          <Card className="rounded-2xl border-0 shadow-sm lg:col-span-2">
-            <CardHeader>
-              <CardTitle>Datos generales</CardTitle>
-            </CardHeader>
-            <CardContent className="grid md:grid-cols-2 gap-4 text-sm">
-              <div><span className="font-medium">Nombres:</span> {farmer.nombres}</div>
-              <div><span className="font-medium">Apellidos:</span> {farmer.apellidos}</div>
-              <div><span className="font-medium">RUT:</span> {farmer.rut}</div>
-              <div><span className="font-medium">Teléfono:</span> {farmer.telefono}</div>
-              <div><span className="font-medium">Comuna:</span> {farmer.comuna}</div>
-              <div><span className="font-medium">Dirección:</span> {farmer.direccion}</div>
-              <div><span className="font-medium">Rubro principal:</span> {farmer.rubro}</div>
-              <div><span className="font-medium">Predios:</span> {farmer.predios}</div>
-              <div className="md:col-span-2"><span className="font-medium">Rubros de la explotación:</span> {availableRubros.join(", ")}</div>
-              <div className="md:col-span-2"><span className="font-medium">Observaciones:</span> {farmer.observaciones || "Sin observaciones."}</div>
-            </CardContent>
-          </Card>
-
-          <div className="space-y-5">
-            <Card className="rounded-2xl border-0 shadow-sm">
-              <CardContent className="p-5 flex items-start gap-3">
-                <Tractor className="h-5 w-5 mt-1 text-slate-500" />
-                <div>
-                  <p className="font-medium">Cantidad de predios</p>
-                  <p className="text-sm text-slate-600">{farmer.predios} registrados actualmente.</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="rounded-2xl border-0 shadow-sm">
-              <CardContent className="p-5 flex items-start gap-3">
-                <MapPin className="h-5 w-5 mt-1 text-slate-500" />
-                <div>
-                  <p className="font-medium">Hectáreas totales de la explotación</p>
-                  <p className="text-sm text-slate-600">{totalHectareasExplotacion} ha, suma de las hectáreas totales de cada predio.</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="rounded-2xl border-0 shadow-sm">
-              <CardContent className="p-5 flex items-start gap-3">
-                <FileText className="h-5 w-5 mt-1 text-slate-500" />
-                <div>
-                  <p className="font-medium">Hectáreas arables de la explotación</p>
-                  <p className="text-sm text-slate-600">{totalHectareasArables} ha arables o de praderas disponibles.</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        <Card className="rounded-2xl border-0 shadow-sm">
-          <CardHeader className="space-y-4">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-              <div>
-                <CardTitle>Predios del agricultor</CardTitle>
-                <p className="text-sm text-slate-500 mt-1">Cada predio puede tener una o varias asignaciones de hectáreas a distintos rubros.</p>
-              </div>
-              <Button className="rounded-xl" onClick={openCreatePredio}>
-                <Plus className="h-4 w-4 mr-2" />
-                {showPredioForm && !editingPredioId ? "Ocultar formulario" : "Agregar predio"}
-              </Button>
-            </div>
-
-            <div className="rounded-2xl border bg-slate-50 p-4 space-y-4">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                <div>
-                  <p className="font-medium">Rubros activos de la explotación</p>
-                  <p className="text-sm text-slate-500">Aquí defines los rubros disponibles para asignar en los predios.</p>
-                </div>
-                {editingRubrosExplotacion ? (
-                  <div className="flex gap-2">
-                    <Button type="button" variant="outline" className="rounded-xl" onClick={handleCancelRubrosExplotacion}>Cancelar</Button>
-                    <Button type="button" className="rounded-xl" onClick={handleSaveRubrosExplotacion}>Guardar rubros</Button>
-                  </div>
-                ) : (
-                  <Button type="button" variant="outline" className="rounded-xl" onClick={() => { setRubrosTemp(availableRubros); setEditingRubrosExplotacion(true); }}>
-                    <BriefcaseBusiness className="h-4 w-4 mr-2" />
-                    Editar rubros
-                  </Button>
-                )}
-              </div>
-
-              {editingRubrosExplotacion ? (
-                <div className="flex flex-wrap gap-2">
-                  {["Leche", "Carne", "Agricultura"].map((rubro) => {
-                    const active = rubrosTemp.includes(rubro);
-                    return (
-                      <button
-                        key={rubro}
-                        type="button"
-                        onClick={() => toggleRubroExplotacion(rubro)}
-                        className={`rounded-full border px-4 py-2 text-sm transition ${active ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-700 border-slate-200"}`}
-                      >
-                        {rubro}
-                      </button>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {availableRubros.map((rubro) => (
-                    <Badge key={rubro} variant="outline" className="rounded-full px-3 py-1">{rubro}</Badge>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="rounded-2xl border bg-slate-50 p-4">
-              <p className="font-medium">Hectáreas asignadas por rubro</p>
-              <div className="flex flex-wrap gap-2 mt-3">
-                {rubrosResumenLista.length > 0 ? (
-                  rubrosResumenLista.map(([rubro, hectareas]) => (
-                    <Badge key={rubro} variant="secondary" className="rounded-full px-3 py-1">
-                      {rubro}: {hectareas} ha
-                    </Badge>
-                  ))
-                ) : (
-                  <span className="text-sm text-slate-500">Aún no hay hectáreas asignadas a rubros.</span>
-                )}
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            {showPredioForm && (
-              <form onSubmit={handleSavePredio} className="grid md:grid-cols-2 xl:grid-cols-3 gap-4 border rounded-2xl p-4 bg-slate-50">
-                <div className="md:col-span-2 xl:col-span-3 flex items-center justify-between gap-3">
-                  <div>
-                    <p className="font-medium">{editingPredioId ? "Editar predio" : "Nuevo predio"}</p>
-                    <p className="text-sm text-slate-500">La suma de hectáreas por rubro no puede superar las hectáreas arables.</p>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Nombre del predio</Label>
-                  <Input value={predioForm.nombre} onChange={(e) => updatePredioField("nombre", e.target.value)} className="rounded-xl" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Rol</Label>
-                  <Input value={predioForm.rol} onChange={(e) => updatePredioField("rol", e.target.value)} className="rounded-xl" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Comuna</Label>
-                  <Input value={predioForm.comuna} onChange={(e) => updatePredioField("comuna", e.target.value)} className="rounded-xl" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Sector</Label>
-                  <Input value={predioForm.sector} onChange={(e) => updatePredioField("sector", e.target.value)} className="rounded-xl" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Hectáreas totales del predio</Label>
-                  <Input type="number" value={predioForm.hectareasTotales} onChange={(e) => updatePredioField("hectareasTotales", e.target.value)} className="rounded-xl" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Hectáreas arables</Label>
-                  <Input type="number" value={predioForm.hectareasArables} onChange={(e) => updatePredioField("hectareasArables", e.target.value)} className="rounded-xl" />
-                </div>
-
-                <div className="md:col-span-2 xl:col-span-3 rounded-2xl border bg-white p-4 space-y-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="font-medium">Asignación de hectáreas por rubro</p>
-                      <p className="text-sm text-slate-500">Un mismo predio puede tener 2 o más rubros asignados, pero solo dentro de la explotación.</p>
-                    </div>
-                    <Button type="button" variant="outline" className="rounded-xl" onClick={addAsignacion}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Agregar rubro
-                    </Button>
-                  </div>
-
-                  <div className="grid gap-3">
-                    {predioForm.asignacionesRubro.map((asignacion, index) => (
-                      <div key={index} className="grid md:grid-cols-[1fr_180px_auto] gap-3 items-end">
-                        <div className="space-y-2">
-                          <Label>Rubro</Label>
-                          <select
-                            value={asignacion.rubro}
-                            onChange={(e) => updateAsignacion(index, "rubro", e.target.value)}
-                            className="w-full h-10 rounded-xl border border-slate-200 px-3 bg-white"
-                          >
-                            {availableRubros.map((rubro) => (
-                              <option key={rubro}>{rubro}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Hectáreas asignadas</Label>
-                          <Input
-                            type="number"
-                            value={asignacion.hectareas}
-                            onChange={(e) => updateAsignacion(index, "hectareas", e.target.value)}
-                            className="rounded-xl"
-                          />
-                        </div>
-                        <Button type="button" variant="outline" className="rounded-xl" onClick={() => removeAsignacion(index)}>
-                          Quitar
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Tenencia</Label>
-                  <select value={predioForm.tenencia} onChange={(e) => updatePredioField("tenencia", e.target.value)} className="w-full h-10 rounded-xl border border-slate-200 px-3 bg-white">
-                    <option>Propio</option>
-                    <option>Arriendo</option>
-                    <option>Mediería</option>
-                    <option>Comodato</option>
-                    <option>Otro</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Avalúo fiscal</Label>
-                  <select value={predioForm.avaluoFiscal} onChange={(e) => updatePredioField("avaluoFiscal", e.target.value)} className="w-full h-10 rounded-xl border border-slate-200 px-3 bg-white">
-                    <option>Sí</option>
-                    <option>No</option>
-                  </select>
-                </div>
-                <div className="space-y-2 xl:col-span-2">
-                  <Label>Documento tenencia</Label>
-                  <Input value={predioForm.documentoTenencia} onChange={(e) => updatePredioField("documentoTenencia", e.target.value)} placeholder="Nombre del archivo escaneado" className="rounded-xl" />
-                </div>
-                <div className="space-y-2 xl:col-span-1">
-                  <Label>Documento avalúo</Label>
-                  <Input value={predioForm.documentoAvaluo} onChange={(e) => updatePredioField("documentoAvaluo", e.target.value)} placeholder="Nombre del archivo escaneado" className="rounded-xl" />
-                </div>
-                <div className="md:col-span-2 xl:col-span-3 flex justify-end gap-3">
-                  <Button type="button" variant="outline" className="rounded-xl" onClick={handleCancelPredio}>
-                    Cancelar
-                  </Button>
-                  <Button type="submit" className="rounded-xl">
-                    <Save className="h-4 w-4 mr-2" />
-                    {editingPredioId ? "Guardar cambios" : "Guardar predio"}
-                  </Button>
-                </div>
-              </form>
-            )}
-
-            <div className="grid gap-4">
-              {(farmer.prediosDetalle || []).map((predio) => (
-                <Card key={predio.id} className="rounded-2xl border bg-white">
-                  <CardContent className="p-5 space-y-4">
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-                      <div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="text-lg font-semibold">{predio.nombre}</h3>
-                          <Badge variant="secondary" className="rounded-full">ROL {predio.rol}</Badge>
-                        </div>
-                        <p className="text-sm texport default function SistemaAgricolaContinuacion() {
-  const [screen, setScreen] = useState("login");
-  const [search, setSearch] = useState("");
-  const [farmers, setFarmers] = useState(initialFarmers);
-  const [selectedFarmer, setSelectedFarmer] = useState(null);
-
-  function handleLogin(user, password) {
-    if (user === "admin" && password === "admin123") {
-      setScreen("admin");
-    } else {
-      alert("Credenciales incorrectas.");
-    }
-  }
-
-  function handleSaveFarmer(newFarmer) {
-    const rubrosExplotacion = newFarmer.rubrosExplotacion?.length ? newFarmer.rubrosExplotacion : [newFarmer.rubro || "Leche"];
-    const created = {
-      ...newFarmer,
-      rubro: rubrosExplotacion.includes(newFarmer.rubro) ? newFarmer.rubro : rubrosExplotacion[0],
-      rubrosExplotacion,
-      id: Date.now(),
-      prediosDetalle: [],
-    };
-    setFarmers((prev) => [created, ...prev]);
-    setSelectedFarmer(created);
-    setSearch(`${created.nombres} ${created.apellidos}`);
-    setScreen("detail");
-  }
-
-  function handleSavePredio(farmerId, newPredio) {
-    const predio = {
-      ...newPredio,
-      id: Date.now(),
-    };
-
-    setFarmers((prev) =>
-      prev.map((farmer) => {
-        if (farmer.id !== farmerId) return farmer;
-        const updatedPredios = [...(farmer.prediosDetalle || []), predio];
-        const updatedFarmer = {
-          ...farmer,
-          prediosDetalle: updatedPredios,
-          predios: updatedPredios.length,
-        };
-        setSelectedFarmer(updatedFarmer);
-        return updatedFarmer;
-      })
-    );
-  }
-
-  function handleUpdatePredio(farmerId, predioId, updatedData) {
-    setFarmers((prev) =>
-      prev.map((farmer) => {
-        if (farmer.id !== farmerId) return farmer;
-        const updatedPredios = (farmer.prediosDetalle || []).map((predio) =>
-          predio.id === predioId ? { ...predio, ...updatedData, id: predioId } : predio
-        );
-        const updatedFarmer = {
-          ...farmer,
-          prediosDetalle: updatedPredios,
-          predios: updatedPredios.length,
-        };
-        setSelectedFarmer(updatedFarmer);
-        return updatedFarmer;
-      })
-    );
-  }
-
-  function handleDeletePredio(farmerId, predioId) {
